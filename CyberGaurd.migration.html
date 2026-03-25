@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard – Laravel Migrations</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Orbitron:wght@600;900&display=swap');
+
+        :root {
+            --bg: #060d14;
+            --panel: #0b1622;
+            --panel2: #0f1e2e;
+            --border: #1a3a5c;
+            --accent: #00d4ff;
+            --accent2: #ff6b35;
+            --accent3: #39ff14;
+            --accent4: #c77dff;
+            --text: #c8dce8;
+            --text-dim: #5a7a8a;
+            --keyword: #ff79c6;
+            --string: #f1fa8c;
+            --method: #50fa7b;
+            --comment: #6272a4;
+            --type: #8be9fd;
+            --number: #bd93f9;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* HEADER */
+        header {
+            padding: 2.5rem 2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, #000810 0%, transparent 100%);
+            text-align: center;
+        }
+        header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.4rem, 4vw, 2.2rem);
+            color: var(--accent);
+            text-shadow: 0 0 30px rgba(0,212,255,0.4);
+            letter-spacing: 0.2em;
+        }
+        header p { color: var(--text-dim); font-size: 0.78rem; margin-top: 0.5rem; letter-spacing: 0.1em; }
+
+        /* LAYOUT */
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+        /* TABLE OF CONTENTS */
+        .toc {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .toc h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.25em;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.4rem;
+        }
+        .toc-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 3px;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .toc-item:hover { color: var(--accent); border-color: rgba(0,212,255,0.2); background: rgba(0,212,255,0.05); }
+        .toc-num { color: var(--text-dim); font-size: 0.6rem; min-width: 20px; }
+
+        /* MIGRATION BLOCK */
+        .migration {
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .migration-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1.2rem;
+            background: var(--panel2);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+        }
+        .migration-header:hover { background: rgba(0,212,255,0.05); }
+        .migration-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .migration-num {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            background: rgba(0,0,0,0.3);
+            padding: 0.2rem 0.5rem;
+            border-radius: 2px;
+            border: 1px solid var(--border);
+            min-width: 28px;
+            text-align: center;
+        }
+        .migration-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .migration-file {
+            font-size: 0.65rem;
+            color: var(--comment);
+            font-weight: 400;
+        }
+        .migration-tag {
+            font-size: 0.6rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+        }
+        .tag-core   { background: rgba(0,212,255,0.12); color: var(--accent);  border: 1px solid rgba(0,212,255,0.3); }
+        .tag-scan   { background: rgba(57,255,20,0.1);  color: var(--accent3); border: 1px solid rgba(57,255,20,0.3); }
+        .tag-phish  { background: rgba(255,107,53,0.12);color: var(--accent2); border: 1px solid rgba(255,107,53,0.3);}
+        .tag-report { background: rgba(199,125,255,0.1);color: var(--accent4); border: 1px solid rgba(199,125,255,0.3);}
+        .tag-collab { background: rgba(255,215,0,0.1);  color: #ffd700;        border: 1px solid rgba(255,215,0,0.3); }
+
+        .toggle-icon { color: var(--accent); font-size: 0.8rem; transition: transform 0.2s; }
+        .migration.collapsed .toggle-icon { transform: rotate(-90deg); }
+        .migration.collapsed .code-wrapper { display: none; }
+
+        /* CODE */
+        .code-wrapper {
+            background: #020912;
+            overflow-x: auto;
+        }
+        pre {
+            padding: 1.2rem 1.5rem;
+            font-size: 0.75rem;
+            line-height: 1.7;
+            tab-size: 4;
+        }
+
+        /* SYNTAX HIGHLIGHTING */
+        .kw  { color: var(--keyword); }
+        .fn  { color: var(--method); }
+        .str { color: var(--string); }
+        .ty  { color: var(--type); }
+        .cm  { color: var(--comment); font-style: italic; }
+        .nb  { color: var(--number); }
+        .cl  { color: #ffb86c; }
+
+        /* SECTION HEADERS */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 2.5rem 0 1rem;
+        }
+        .section-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            padding: 0.4rem 1rem;
+            border-radius: 3px;
+        }
+        .sh-core   { color: var(--accent);  border: 1px solid rgba(0,212,255,0.3);  background: rgba(0,212,255,0.06); }
+        .sh-scan   { color: var(--accent3); border: 1px solid rgba(57,255,20,0.3);  background: rgba(57,255,20,0.06); }
+        .sh-phish  { color: var(--accent2); border: 1px solid rgba(255,107,53,0.3); background: rgba(255,107,53,0.06); }
+        .sh-report { color: var(--accent4); border: 1px solid rgba(199,125,255,0.3);background: rgba(199,125,255,0.06); }
+        .sh-collab { color: #ffd700;        border: 1px solid rgba(255,215,0,0.3);   background: rgba(255,215,0,0.06); }
+        .section-line { flex: 1; height: 1px; background: var(--border); }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            font-size: 0.65rem;
+            border-top: 1px solid var(--border);
+            letter-spacing: 0.1em;
+            margin-top: 3rem;
+        }
+        footer span { color: var(--accent); }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>⚡ CYBERGUARD</h1>
+    <p>Laravel 12 Migrations — Complete Database Reference</p>
+</header>
+
+<div class="container">
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="toc">
+        <h2>📋 Table of Contents — 20 Migrations</h2>
+        <div class="toc-grid">
+            <a href="#m1"  class="toc-item"><span class="toc-num">01</span> users</a>
+            <a href="#m2"  class="toc-item"><span class="toc-num">02</span> user_subscriptions</a>
+            <a href="#m3"  class="toc-item"><span class="toc-num">03</span> organizations</a>
+            <a href="#m4"  class="toc-item"><span class="toc-num">04</span> organization_subscriptions</a>
+            <a href="#m5"  class="toc-item"><span class="toc-num">05</span> organization_members</a>
+            <a href="#m6"  class="toc-item"><span class="toc-num">06</span> projects</a>
+            <a href="#m7"  class="toc-item"><span class="toc-num">07</span> project_collaborators</a>
+            <a href="#m8"  class="toc-item"><span class="toc-num">08</span> project_invitations</a>
+            <a href="#m9"  class="toc-item"><span class="toc-num">09</span> targets</a>
+            <a href="#m10" class="toc-item"><span class="toc-num">10</span> scan_modules</a>
+            <a href="#m11" class="toc-item"><span class="toc-num">11</span> scan_jobs</a>
+            <a href="#m12" class="toc-item"><span class="toc-num">12</span> scan_job_modules</a>
+            <a href="#m13" class="toc-item"><span class="toc-num">13</span> findings</a>
+            <a href="#m14" class="toc-item"><span class="toc-num">14</span> evidences</a>
+            <a href="#m15" class="toc-item"><span class="toc-num">15</span> phishing_campaigns</a>
+            <a href="#m16" class="toc-item"><span class="toc-num">16</span> phishing_targets</a>
+            <a href="#m17" class="toc-item"><span class="toc-num">17</span> phishing_events</a>
+            <a href="#m18" class="toc-item"><span class="toc-num">18</span> reports</a>
+            <a href="#m19" class="toc-item"><span class="toc-num">19</span> risk_scores</a>
+            <a href="#m20" class="toc-item"><span class="toc-num">20</span> audit_logs</a>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section-header">
+        <h2 class="sh-core">◈ Core / Auth</h2>
+        <div class="section-line"></div>
+    </div>
+
+    <!-- 01 users -->
+    <div class="migration" id="m1">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">01</span>
+                <div>
+                    <div class="migration-name">users</div>
+                    <div class="migration-file">database/migrations/0001_01_01_000000_create_users_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-core">CORE</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="kw">use</span> <span class="cl">Illuminate\Database\Migrations\Migration</span>;
+<span class="kw">use</span> <span class="cl">Illuminate\Database\Schema\Blueprint</span>;
+<span class="kw">use</span> <span class="cl">Illuminate\Support\Facades\Schema</span>;
+
+<span class="kw">return new class extends</span> <span class="cl">Migration</span>
+{
+    <span class="kw">public function</span> <span class="fn">up</span>(): <span class="ty">void</span>
+    {
+        <span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'users'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+            <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+            <span class="cm">// Auth</span>
+            <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'email'</span>)-><span class="fn">unique</span>();
+            <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'password'</span>);
+            <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'email_verified_at'</span>)-><span class="fn">nullable</span>();
+            <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'two_factor_secret'</span>)-><span class="fn">nullable</span>();
+            <span class="nb">$table</span>-><span class="fn">boolean</span>(<span class="str">'two_factor_enabled'</span>)-><span class="fn">default</span>(<span class="kw">false</span>);
+            <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'remember_token'</span>, <span class="nb">100</span>)-><span class="fn">nullable</span>();
+
+            <span class="cm">// Profile</span>
+            <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'full_name'</span>);
+            <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'avatar_url'</span>)-><span class="fn">nullable</span>();
+
+            <span class="cm">// Meta</span>
+            <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'last_login_at'</span>)-><span class="fn">nullable</span>();
+            <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+            <span class="nb">$table</span>-><span class="fn">softDeletes</span>();
+        });
+    }
+
+    <span class="kw">public function</span> <span class="fn">down</span>(): <span class="ty">void</span>
+    {
+        <span class="cl">Schema</span>::<span class="fn">dropIfExists</span>(<span class="str">'users'</span>);
+    }
+};</pre></div>
+    </div>
+
+    <!-- 02 user_subscriptions -->
+    <div class="migration" id="m2">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">02</span>
+                <div>
+                    <div class="migration-name">user_subscriptions</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000001_create_user_subscriptions_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-core">CORE</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'user_subscriptions'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'user_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// الباقة الشخصية للـ User</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'plan'</span>, [<span class="str">'free'</span>, <span class="str">'starter'</span>, <span class="str">'pro'</span>])
+           -><span class="fn">default</span>(<span class="str">'free'</span>);
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'status'</span>, [<span class="str">'active'</span>, <span class="str">'expired'</span>, <span class="str">'cancelled'</span>])
+           -><span class="fn">default</span>(<span class="str">'active'</span>);
+
+    <span class="cm">// حدود الباقة</span>
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'max_projects'</span>)-><span class="fn">default</span>(<span class="nb">3</span>);
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'max_targets'</span>)-><span class="fn">default</span>(<span class="nb">10</span>);
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'max_scans_per_month'</span>)-><span class="fn">default</span>(<span class="nb">10</span>);
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'started_at'</span>);
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'expires_at'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- 03 organizations -->
+    <div class="migration" id="m3">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">03</span>
+                <div>
+                    <div class="migration-name">organizations</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000002_create_organizations_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-core">CORE</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'organizations'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="cm">// صاحب الـ Organization</span>
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'owner_id'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'users'</span>)
+           -><span class="fn">restrictOnDelete</span>();
+
+    <span class="cm">// بيانات الشركة</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'name'</span>);
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'slug'</span>)-><span class="fn">unique</span>();
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'domain'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'logo_url'</span>)-><span class="fn">nullable</span>();
+
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+    <span class="nb">$table</span>-><span class="fn">softDeletes</span>();
+});</pre></div>
+    </div>
+
+    <!-- 04 organization_subscriptions -->
+    <div class="migration" id="m4">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">04</span>
+                <div>
+                    <div class="migration-name">organization_subscriptions</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000003_create_organization_subscriptions_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-core">CORE</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'organization_subscriptions'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'organization_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// باقة الشركة — منفصلة عن باقة الـ User</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'plan'</span>, [<span class="str">'starter'</span>, <span class="str">'pro'</span>, <span class="str">'enterprise'</span>])
+           -><span class="fn">default</span>(<span class="str">'starter'</span>);
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'status'</span>, [<span class="str">'active'</span>, <span class="str">'expired'</span>, <span class="str">'cancelled'</span>])
+           -><span class="fn">default</span>(<span class="str">'active'</span>);
+
+    <span class="cm">// حدود الباقة</span>
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'max_projects'</span>)-><span class="fn">default</span>(<span class="nb">10</span>);
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'max_targets'</span>)-><span class="fn">default</span>(<span class="nb">50</span>);
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'max_members'</span>)-><span class="fn">default</span>(<span class="nb">5</span>);
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'max_scans_per_month'</span>)-><span class="fn">default</span>(<span class="nb">100</span>);
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'started_at'</span>);
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'expires_at'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- 05 organization_members -->
+    <div class="migration" id="m5">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">05</span>
+                <div>
+                    <div class="migration-name">organization_members</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000004_create_organization_members_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-core">CORE</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'organization_members'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'organization_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'user_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// owner → أنشأ الـ Org ويتضاف تلقائياً
+    // admin  → يضيف مشاريع وأعضاء
+    // member → يشتغل على المشاريع
+    // viewer → يشوف بس</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'role'</span>, [<span class="str">'owner'</span>, <span class="str">'admin'</span>, <span class="str">'member'</span>, <span class="str">'viewer'</span>])
+           -><span class="fn">default</span>(<span class="str">'member'</span>);
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'joined_at'</span>);
+
+    <span class="cm">// User مش ينضاف لنفس الـ Org أكتر من مرة</span>
+    <span class="nb">$table</span>-><span class="fn">unique</span>([<span class="str">'organization_id'</span>, <span class="str">'user_id'</span>]);
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section-header">
+        <h2 class="sh-collab">◈ Projects & Collaborators</h2>
+        <div class="section-line"></div>
+    </div>
+
+    <!-- 06 projects -->
+    <div class="migration" id="m6">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">06</span>
+                <div>
+                    <div class="migration-name">projects</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000005_create_projects_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-collab">PROJECTS</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'projects'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="cm">// Polymorphic ownership — شخصي أو تابع لشركة
+    // owner_type = 'App\Models\User' أو 'App\Models\Organization'
+    // owner_id   = UUID بتاع الـ User أو الـ Organization</span>
+    <span class="nb">$table</span>-><span class="fn">uuidMorphs</span>(<span class="str">'owner'</span>);
+
+    <span class="cm">// مين ضغط "Create Project"</span>
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'created_by'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'users'</span>)
+           -><span class="fn">restrictOnDelete</span>();
+
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'name'</span>);
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'description'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'status'</span>, [<span class="str">'active'</span>, <span class="str">'archived'</span>, <span class="str">'completed'</span>])
+           -><span class="fn">default</span>(<span class="str">'active'</span>);
+
+    <span class="nb">$table</span>-><span class="fn">date</span>(<span class="str">'start_date'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">date</span>(<span class="str">'end_date'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// حد أقصى للـ Collaborators حسب الباقة</span>
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'max_collaborators'</span>)-><span class="fn">default</span>(<span class="nb">3</span>);
+
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+    <span class="nb">$table</span>-><span class="fn">softDeletes</span>();
+
+    <span class="cm">// Index لتسريع جلب مشاريع الـ Owner</span>
+    <span class="nb">$table</span>-><span class="fn">index</span>([<span class="str">'owner_type'</span>, <span class="str">'owner_id'</span>]);
+});</pre></div>
+    </div>
+
+    <!-- 07 project_collaborators -->
+    <div class="migration" id="m7">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">07</span>
+                <div>
+                    <div class="migration-name">project_collaborators</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000006_create_project_collaborators_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-collab">COLLAB</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'project_collaborators'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'project_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'user_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// مين بعت الدعوة</span>
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'invited_by'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'users'</span>)
+           -><span class="fn">restrictOnDelete</span>();
+
+    <span class="cm">// owner  → صاحب المشروع (بيتضاف تلقائياً عند الإنشاء)
+    // editor → يضيف Targets ويشغل Scans ويعدل Findings
+    // viewer → يشوف بس</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'role'</span>, [<span class="str">'owner'</span>, <span class="str">'editor'</span>, <span class="str">'viewer'</span>])
+           -><span class="fn">default</span>(<span class="str">'editor'</span>);
+
+    <span class="cm">// pending  → الدعوة اتبعتت ولسه مش قبلت
+    // accepted → قبل الدعوة وبيشتغل على المشروع
+    // rejected → رفض الدعوة</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'status'</span>, [<span class="str">'pending'</span>, <span class="str">'accepted'</span>, <span class="str">'rejected'</span>])
+           -><span class="fn">default</span>(<span class="str">'pending'</span>);
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'invited_at'</span>);
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'accepted_at'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// User مش ينضاف للمشروع أكتر من مرة</span>
+    <span class="nb">$table</span>-><span class="fn">unique</span>([<span class="str">'project_id'</span>, <span class="str">'user_id'</span>]);
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- 08 project_invitations -->
+    <div class="migration" id="m8">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">08</span>
+                <div>
+                    <div class="migration-name">project_invitations</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000007_create_project_invitations_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-collab">COLLAB</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'project_invitations'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'project_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'invited_by'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'users'</span>)
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// إيميل المدعو (ممكن يكون مسجل أو لأ)</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'email'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// الرابط السري — بيتبعت بالإيميل أو على واتساب
+    // مثال: cyberguard.io/invite/abc123xyz456</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'token'</span>, <span class="nb">100</span>)-><span class="fn">unique</span>();
+
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'role'</span>, [<span class="str">'editor'</span>, <span class="str">'viewer'</span>])
+           -><span class="fn">default</span>(<span class="str">'editor'</span>);
+
+    <span class="cm">// pending  → لسه ما اتقبلتش
+    // accepted → اتقبلت
+    // expired  → انتهت صلاحيتها</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'status'</span>, [<span class="str">'pending'</span>, <span class="str">'accepted'</span>, <span class="str">'expired'</span>])
+           -><span class="fn">default</span>(<span class="str">'pending'</span>);
+
+    <span class="cm">// الدعوة بتنتهي بعد 7 أيام تلقائياً</span>
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'expires_at'</span>);
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section-header">
+        <h2 class="sh-scan">◈ Targets & Scan System</h2>
+        <div class="section-line"></div>
+    </div>
+
+    <!-- 09 targets -->
+    <div class="migration" id="m9">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">09</span>
+                <div>
+                    <div class="migration-name">targets</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000008_create_targets_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-scan">SCAN</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'targets'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'project_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// domain  → "example.com"
+    // ip      → "192.168.1.1"
+    // network → "192.168.1.0/24"</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'type'</span>, [<span class="str">'domain'</span>, <span class="str">'ip'</span>, <span class="str">'network'</span>]);
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'value'</span>, <span class="nb">500</span>);
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'label'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// هل الشركة ملاكة الدومين ده فعلاً؟</span>
+    <span class="nb">$table</span>-><span class="fn">boolean</span>(<span class="str">'is_verified'</span>)-><span class="fn">default</span>(<span class="kw">false</span>);
+
+    <span class="cm">// أخر Risk Score للـ Target</span>
+    <span class="nb">$table</span>-><span class="fn">decimal</span>(<span class="str">'risk_score'</span>, <span class="nb">5</span>, <span class="nb">2</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'last_scanned_at'</span>)-><span class="fn">nullable</span>();
+
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+
+    <span class="nb">$table</span>-><span class="fn">index</span>(<span class="str">'project_id'</span>);
+});</pre></div>
+    </div>
+
+    <!-- 10 scan_modules -->
+    <div class="migration" id="m10">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">10</span>
+                <div>
+                    <div class="migration-name">scan_modules</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000009_create_scan_modules_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-scan">SCAN</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'scan_modules'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'name'</span>);           <span class="cm">// "SQL Injection Scanner"</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'slug'</span>)-><span class="fn">unique</span>(); <span class="cm">// "sqli"</span>
+
+    <span class="cm">// web     → SQLi, XSS, CSRF
+    // network → Port Scan, Banner Grabbing
+    // recon   → Subdomain Enum, Whois</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'category'</span>, [<span class="str">'web'</span>, <span class="str">'network'</span>, <span class="str">'recon'</span>]);
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'description'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">boolean</span>(<span class="str">'is_active'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- 11 scan_jobs -->
+    <div class="migration" id="m11">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">11</span>
+                <div>
+                    <div class="migration-name">scan_jobs</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000010_create_scan_jobs_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-scan">SCAN</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'scan_jobs'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'target_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'project_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// مين ضغط "Start Scan"</span>
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'triggered_by'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'users'</span>)
+           -><span class="fn">restrictOnDelete</span>();
+
+    <span class="cm">// auto     → كل الـ Modules بتشتغل تلقائياً
+    // targeted → المستخدم اختار Modules محددة</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'scan_type'</span>, [<span class="str">'auto'</span>, <span class="str">'targeted'</span>]);
+
+    <span class="cm">// دورة الحياة: pending → running → completed / failed</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'status'</span>, [<span class="str">'pending'</span>, <span class="str">'running'</span>, <span class="str">'completed'</span>, <span class="str">'failed'</span>])
+           -><span class="fn">default</span>(<span class="str">'pending'</span>);
+
+    <span class="cm">// ID الـ Docker Container اللي اتشغل فيه الـ Scan</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'container_id'</span>)-><span class="fn">nullable</span>();
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'started_at'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'finished_at'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'error_log'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+
+    <span class="nb">$table</span>-><span class="fn">index</span>([<span class="str">'target_id'</span>, <span class="str">'status'</span>]);
+});</pre></div>
+    </div>
+
+    <!-- 12 scan_job_modules -->
+    <div class="migration" id="m12">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">12</span>
+                <div>
+                    <div class="migration-name">scan_job_modules</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000011_create_scan_job_modules_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-scan">SCAN</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'scan_job_modules'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'scan_job_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'module_id'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'scan_modules'</span>)
+           -><span class="fn">restrictOnDelete</span>();
+
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'status'</span>, [<span class="str">'pending'</span>, <span class="str">'running'</span>, <span class="str">'done'</span>, <span class="str">'failed'</span>])
+           -><span class="fn">default</span>(<span class="str">'pending'</span>);
+
+    <span class="cm">// كم millisecond أخد الـ Module</span>
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'duration_ms'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- 13 findings -->
+    <div class="migration" id="m13">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">13</span>
+                <div>
+                    <div class="migration-name">findings</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000012_create_findings_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-scan">SCAN</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'findings'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'scan_job_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'target_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'title'</span>, <span class="nb">500</span>);
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'description'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// مستوى الخطورة</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'severity'</span>, [<span class="str">'critical'</span>, <span class="str">'high'</span>, <span class="str">'medium'</span>, <span class="str">'low'</span>, <span class="str">'info'</span>]);
+
+    <span class="cm">// CVSS — معيار عالمي لتقييم الثغرات
+    // cvss_score  → رقم من 0 لـ 10    مثلاً: 9.8
+    // cvss_vector → التفاصيل الكاملة  مثلاً: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</span>
+    <span class="nb">$table</span>-><span class="fn">decimal</span>(<span class="str">'cvss_score'</span>, <span class="nb">4</span>, <span class="nb">1</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'cvss_vector'</span>, <span class="nb">200</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'cve_id'</span>, <span class="nb">50</span>)-><span class="fn">nullable</span>(); <span class="cm">// "CVE-2024-1234"</span>
+
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'remediation'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// open          → ثغرة جديدة
+    // in_progress   → بيتشغل عليها
+    // resolved      → اتحلت
+    // false_positive → مش ثغرة فعلية</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'status'</span>, [<span class="str">'open'</span>, <span class="str">'in_progress'</span>, <span class="str">'resolved'</span>, <span class="str">'false_positive'</span>])
+           -><span class="fn">default</span>(<span class="str">'open'</span>);
+
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'affected_url'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'proof'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+
+    <span class="cm">// أهم index في المشروع — لفلترة الـ Findings بالخطورة</span>
+    <span class="nb">$table</span>-><span class="fn">index</span>([<span class="str">'target_id'</span>, <span class="str">'severity'</span>, <span class="str">'status'</span>]);
+});</pre></div>
+    </div>
+
+    <!-- 14 evidences -->
+    <div class="migration" id="m14">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">14</span>
+                <div>
+                    <div class="migration-name">evidences</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000013_create_evidences_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-scan">SCAN</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'evidences'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'finding_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// screenshot → صورة للثغرة
+    // log        → ملف log
+    // request    → الـ HTTP Request
+    // response   → الـ HTTP Response</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'type'</span>, [<span class="str">'screenshot'</span>, <span class="str">'log'</span>, <span class="str">'request'</span>, <span class="str">'response'</span>]);
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'file_url'</span>);
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'mime_type'</span>, <span class="nb">100</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">unsignedBigInteger</span>(<span class="str">'size_bytes'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'uploaded_at'</span>);
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section-header">
+        <h2 class="sh-phish">◈ Phishing Module</h2>
+        <div class="section-line"></div>
+    </div>
+
+    <!-- 15 phishing_campaigns -->
+    <div class="migration" id="m15">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">15</span>
+                <div>
+                    <div class="migration-name">phishing_campaigns</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000014_create_phishing_campaigns_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-phish">PHISH</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'phishing_campaigns'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'project_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'created_by'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'users'</span>)
+           -><span class="fn">restrictOnDelete</span>();
+
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'name'</span>);
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'status'</span>, [<span class="str">'draft'</span>, <span class="str">'active'</span>, <span class="str">'completed'</span>, <span class="str">'paused'</span>])
+           -><span class="fn">default</span>(<span class="str">'draft'</span>);
+
+    <span class="cm">// محتوى الإيميل المزيف</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'email_subject'</span>, <span class="nb">500</span>);
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'email_body'</span>);
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'phishing_url'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'sender_name'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'sender_email'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// لازم الحملة تكون على نطاق الشركة المصرح بها فقط</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'authorized_domain'</span>);
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'scheduled_at'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- 16 phishing_targets -->
+    <div class="migration" id="m16">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">16</span>
+                <div>
+                    <div class="migration-name">phishing_targets</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000015_create_phishing_targets_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-phish">PHISH</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'phishing_targets'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'campaign_id'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'phishing_campaigns'</span>)
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'employee_email'</span>);
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'employee_name'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'department'</span>, <span class="nb">100</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// رمز سري فريد لكل موظف — بيتحفظ في الـ URL
+    // لما يضغط → نعرف مين ضغط بدون تعقيد</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'tracking_token'</span>, <span class="nb">100</span>)-><span class="fn">unique</span>();
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'sent_at'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// تقييم وعيه الأمني من 0 لـ 100
+    // 100 = لم يضغط ولم يكتب بيانات ✅
+    // 0   = كتب بيانات في الفورم المزيف ❌</span>
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'awareness_score'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- 17 phishing_events -->
+    <div class="migration" id="m17">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">17</span>
+                <div>
+                    <div class="migration-name">phishing_events</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000016_create_phishing_events_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-phish">PHISH</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'phishing_events'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'phishing_target_id'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'phishing_targets'</span>)
+           -><span class="fn">cascadeOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'campaign_id'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'phishing_campaigns'</span>)
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// sent      → الإيميل اتبعت
+    // opened    → الموظف فتح الإيميل
+    // clicked   → ضغط على الرابط
+    // submitted → كتب بيانات في الفورم</span>
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'event_type'</span>, [<span class="str">'sent'</span>, <span class="str">'opened'</span>, <span class="str">'clicked'</span>, <span class="str">'submitted'</span>]);
+
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'ip_address'</span>, <span class="nb">45</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'user_agent'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// البيانات اللي كتبها الموظف — بتتحفظ مشفرة</span>
+    <span class="nb">$table</span>-><span class="fn">json</span>(<span class="str">'submitted_data'</span>)-><span class="fn">nullable</span>();
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'occurred_at'</span>);
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+
+    <span class="nb">$table</span>-><span class="fn">index</span>([<span class="str">'campaign_id'</span>, <span class="str">'event_type'</span>]);
+});</pre></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section-header">
+        <h2 class="sh-report">◈ Reporting & Audit</h2>
+        <div class="section-line"></div>
+    </div>
+
+    <!-- 18 reports -->
+    <div class="migration" id="m18">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">18</span>
+                <div>
+                    <div class="migration-name">reports</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000017_create_reports_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-report">REPORT</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'reports'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="cm">// ممكن تقرير Project أو تقرير Target — مش الاتنين مع بعض</span>
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'project_id'</span>)
+           -><span class="fn">nullable</span>()
+           -><span class="fn">constrained</span>()
+           -><span class="fn">nullOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'target_id'</span>)
+           -><span class="fn">nullable</span>()
+           -><span class="fn">constrained</span>()
+           -><span class="fn">nullOnDelete</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'generated_by'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'users'</span>)
+           -><span class="fn">restrictOnDelete</span>();
+
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'title'</span>);
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'type'</span>, [<span class="str">'project'</span>, <span class="str">'target'</span>, <span class="str">'phishing'</span>]);
+    <span class="nb">$table</span>-><span class="fn">enum</span>(<span class="str">'format'</span>, [<span class="str">'pdf'</span>, <span class="str">'json'</span>, <span class="str">'html'</span>]);
+    <span class="nb">$table</span>-><span class="fn">text</span>(<span class="str">'file_url'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// إحصائيات سريعة — بتتحفظ JSON
+    // { "total_findings": 12, "critical": 2, "risk_score": 78.5 }</span>
+    <span class="nb">$table</span>-><span class="fn">json</span>(<span class="str">'summary'</span>)-><span class="fn">nullable</span>();
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'generated_at'</span>);
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+});</pre></div>
+    </div>
+
+    <!-- 19 risk_scores -->
+    <div class="migration" id="m19">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">19</span>
+                <div>
+                    <div class="migration-name">risk_scores</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000018_create_risk_scores_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-report">REPORT</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'risk_scores'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'target_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'scan_job_id'</span>)
+           -><span class="fn">constrained</span>()
+           -><span class="fn">cascadeOnDelete</span>();
+
+    <span class="cm">// الدرجة الكلية من 100
+    // بيتحسب من عدد ونوع الـ Findings</span>
+    <span class="nb">$table</span>-><span class="fn">decimal</span>(<span class="str">'overall_score'</span>, <span class="nb">5</span>, <span class="nb">2</span>);
+
+    <span class="cm">// عداد لكل مستوى خطورة</span>
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'critical_count'</span>)-><span class="fn">default</span>(<span class="nb">0</span>);
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'high_count'</span>)-><span class="fn">default</span>(<span class="nb">0</span>);
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'medium_count'</span>)-><span class="fn">default</span>(<span class="nb">0</span>);
+    <span class="nb">$table</span>-><span class="fn">integer</span>(<span class="str">'low_count'</span>)-><span class="fn">default</span>(<span class="nb">0</span>);
+
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'calculated_at'</span>);
+    <span class="nb">$table</span>-><span class="fn">timestamps</span>();
+
+    <span class="cm">// بنحفظ كل scan — عشان نعمل Trend Chart</span>
+    <span class="nb">$table</span>-><span class="fn">index</span>([<span class="str">'target_id'</span>, <span class="str">'calculated_at'</span>]);
+});</pre></div>
+    </div>
+
+    <!-- 20 audit_logs -->
+    <div class="migration" id="m20">
+        <div class="migration-header" onclick="toggle(this)">
+            <div class="migration-title">
+                <span class="migration-num">20</span>
+                <div>
+                    <div class="migration-name">audit_logs</div>
+                    <div class="migration-file">database/migrations/2024_01_01_000019_create_audit_logs_table.php</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.8rem">
+                <span class="migration-tag tag-report">REPORT</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        <div class="code-wrapper"><pre><span class="cl">Schema</span>::<span class="fn">create</span>(<span class="str">'audit_logs'</span>, <span class="kw">function</span> (<span class="cl">Blueprint</span> <span class="nb">$table</span>) {
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'id'</span>)-><span class="fn">primary</span>();
+
+    <span class="cm">// مين عمل الـ Action</span>
+    <span class="nb">$table</span>-><span class="fn">foreignUuid</span>(<span class="str">'user_id'</span>)
+           -><span class="fn">nullable</span>()
+           -><span class="fn">constrained</span>()
+           -><span class="fn">nullOnDelete</span>();
+
+    <span class="cm">// الـ Action بيحصل في سياق مين؟ User أو Organization</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'owner_type'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'owner_id'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// أمثلة على الـ Actions:
+    // "project.created"    "scan.started"
+    // "finding.resolved"   "user.invited"
+    // "report.generated"   "collaborator.removed"</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'action'</span>, <span class="nb">100</span>);
+
+    <span class="cm">// الـ Entity اللي حصل عليها الـ Action</span>
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'entity_type'</span>, <span class="nb">100</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">uuid</span>(<span class="str">'entity_id'</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// تفاصيل إضافية بـ JSON — مثلاً الـ old/new values</span>
+    <span class="nb">$table</span>-><span class="fn">json</span>(<span class="str">'metadata'</span>)-><span class="fn">nullable</span>();
+    <span class="nb">$table</span>-><span class="fn">string</span>(<span class="str">'ip_address'</span>, <span class="nb">45</span>)-><span class="fn">nullable</span>();
+
+    <span class="cm">// audit_logs مش بتتحذف أبداً — بس بنضيف</span>
+    <span class="nb">$table</span>-><span class="fn">timestamp</span>(<span class="str">'created_at'</span>);
+
+    <span class="nb">$table</span>-><span class="fn">index</span>([<span class="str">'owner_type'</span>, <span class="str">'owner_id'</span>, <span class="str">'created_at'</span>]);
+});</pre></div>
+    </div>
+
+</div>
+
+<footer>
+    <span>20 MIGRATIONS</span> &nbsp;·&nbsp; CYBERGUARD DATABASE &nbsp;·&nbsp; LARAVEL 12 &nbsp;·&nbsp; GRADUATION PROJECT
+</footer>
+
+<script>
+    function toggle(header) {
+        const card = header.closest('.migration');
+        card.classList.toggle('collapsed');
+    }
+    // Collapse all by default on mobile
+    if (window.innerWidth < 768) {
+        document.querySelectorAll('.migration').forEach(m => m.classList.add('collapsed'));
+    }
+</script>
+</body>
+</html>

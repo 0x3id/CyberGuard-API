@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard — شرح الـ Database</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+        :root {
+            --bg:      #050c14;
+            --card:    #091523;
+            --card2:   #0d1e2e;
+            --border:  #132840;
+            --border2: #1e4060;
+            --cyan:    #00d4ff;
+            --green:   #00e676;
+            --orange:  #ff7043;
+            --purple:  #b388ff;
+            --yellow:  #ffd740;
+            --red:     #ff5252;
+            --pink:    #f48fb1;
+            --text:    #cde4f5;
+            --text2:   #6a90aa;
+            --text3:   #2e4d65;
+            --white:   #ffffff;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* ── HEADER ── */
+        .site-header {
+            padding: 2.5rem 1.5rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg,#020810 0%,transparent 100%);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .site-header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(1.1rem, 3vw, 1.6rem);
+            color: var(--cyan);
+            letter-spacing: 0.15em;
+        }
+        .site-header p { color: var(--text2); font-size: 0.8rem; margin-top: 0.3rem; }
+
+        /* ── LAYOUT ── */
+        .layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            min-height: 100vh;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            border-left: 1px solid var(--border);
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 90px;
+            height: calc(100vh - 90px);
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar { width: 3px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border2); }
+
+        .sidebar-group { margin-bottom: 0.5rem; }
+        .sidebar-group-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.2em;
+            color: var(--text3);
+            padding: 0.4rem 1rem;
+            text-transform: uppercase;
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.35rem 1rem;
+            font-size: 0.78rem;
+            color: var(--text2);
+            text-decoration: none;
+            border-right: 2px solid transparent;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            color: var(--white);
+            background: rgba(0,212,255,0.05);
+        }
+        .sidebar-link.active { border-right-color: var(--cyan); }
+        .sidebar-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main { padding: 2rem 2rem 4rem; }
+
+        /* ── SECTION HEADER ── */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 3rem 0 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-divider:first-child { margin-top: 0; }
+        .section-icon { font-size: 1.4rem; }
+        .section-title-text {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+        .section-subtitle { font-size: 0.78rem; color: var(--text2); }
+
+        /* ── TABLE CARD ── */
+        .table-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            scroll-margin-top: 100px;
+            transition: border-color 0.2s;
+        }
+        .table-card:hover { border-color: var(--border2); }
+
+        /* colored top line */
+        .table-card[data-color="cyan"]   { border-top: 3px solid var(--cyan); }
+        .table-card[data-color="green"]  { border-top: 3px solid var(--green); }
+        .table-card[data-color="orange"] { border-top: 3px solid var(--orange); }
+        .table-card[data-color="purple"] { border-top: 3px solid var(--purple); }
+        .table-card[data-color="yellow"] { border-top: 3px solid var(--yellow); }
+        .table-card[data-color="pink"]   { border-top: 3px solid var(--pink); }
+
+        /* ── CARD HEADER ── */
+        .card-head {
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+        }
+        .card-head:hover { background: rgba(255,255,255,0.02); }
+
+        .card-head-right { display: flex; align-items: flex-start; gap: 0.8rem; }
+        .card-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text3);
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 0.15rem 0.5rem;
+            min-width: 30px;
+            text-align: center;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+        .card-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--white);
+        }
+        .card-purpose {
+            font-size: 0.8rem;
+            color: var(--text2);
+            margin-top: 0.2rem;
+        }
+        .card-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .badge-cyan   { background: rgba(0,212,255,0.12);  color: var(--cyan);   border: 1px solid rgba(0,212,255,0.25); }
+        .badge-green  { background: rgba(0,230,118,0.1);   color: var(--green);  border: 1px solid rgba(0,230,118,0.25); }
+        .badge-orange { background: rgba(255,112,67,0.12); color: var(--orange); border: 1px solid rgba(255,112,67,0.25); }
+        .badge-purple { background: rgba(179,136,255,0.1); color: var(--purple); border: 1px solid rgba(179,136,255,0.25);}
+        .badge-yellow { background: rgba(255,215,64,0.1);  color: var(--yellow); border: 1px solid rgba(255,215,64,0.25); }
+        .badge-pink   { background: rgba(244,143,177,0.1); color: var(--pink);   border: 1px solid rgba(244,143,177,0.25);}
+
+        .toggle-btn {
+            color: var(--text3);
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+        .table-card.open .toggle-btn { transform: rotate(180deg); color: var(--cyan); }
+
+        /* ── CARD BODY ── */
+        .card-body { display: none; }
+        .table-card.open .card-body { display: block; }
+
+        /* ── ANALOGY BOX ── */
+        .analogy {
+            margin: 1rem 1.2rem 0;
+            padding: 0.8rem 1rem;
+            background: rgba(0,0,0,0.25);
+            border-right: 3px solid var(--cyan);
+            border-radius: 0 4px 4px 0;
+            font-size: 0.82rem;
+            color: var(--text2);
+        }
+        .analogy strong { color: var(--cyan); }
+
+        /* ── COLUMNS TABLE ── */
+        .cols-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .cols-table th {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            color: var(--text3);
+            text-transform: uppercase;
+            padding: 0.4rem 1.2rem;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0,0,0,0.15);
+        }
+        .cols-table td {
+            padding: 0.5rem 1.2rem;
+            font-size: 0.78rem;
+            border-bottom: 1px solid rgba(19,40,64,0.5);
+            vertical-align: top;
+        }
+        .cols-table tr:last-child td { border-bottom: none; }
+        .cols-table tr:hover td { background: rgba(0,212,255,0.025); }
+
+        .col-icon { width: 22px; text-align: center; }
+        .icon-pk { color: var(--yellow); font-size: 0.7rem; }
+        .icon-fk { color: var(--orange); font-size: 0.7rem; }
+
+        .col-name-cell {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            min-width: 160px;
+        }
+        .name-pk { color: var(--yellow); }
+        .name-fk { color: var(--orange); }
+        .name-normal { color: #a8d8f0; }
+
+        .col-type-cell {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text3);
+            min-width: 120px;
+        }
+        .col-desc-cell { color: var(--text2); }
+
+        /* ── RELATIONS ── */
+        .relations {
+            padding: 1rem 1.2rem 1.2rem;
+            border-top: 1px solid var(--border);
+            margin-top: 0.5rem;
+        }
+        .relations-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.15em;
+            color: var(--text3);
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+        .rel-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .rel-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid var(--border2);
+            background: rgba(0,0,0,0.3);
+            color: var(--text2);
+        }
+        .rel-pill span { color: var(--cyan); }
+
+        /* ── EXAMPLE BOX ── */
+        .example-box {
+            margin: 0 1.2rem 1.2rem;
+            padding: 0.8rem 1rem;
+            background: rgba(0,230,118,0.04);
+            border: 1px solid rgba(0,230,118,0.15);
+            border-radius: 4px;
+            font-size: 0.78rem;
+            color: var(--text2);
+        }
+        .example-box strong { color: var(--green); }
+        .example-box code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--yellow);
+            background: rgba(0,0,0,0.3);
+            padding: 0.1rem 0.4rem;
+            border-radius: 2px;
+        }
+
+        /* ── PROGRESS BAR ── */
+        .progress-bar {
+            height: 2px;
+            background: var(--border);
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 999;
+            transition: width 0.1s;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+        }
+
+        /* ── MOBILE ── */
+        @media (max-width: 768px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .main { padding: 1.2rem; }
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<div class="site-header">
+    <h1>⚡ CYBERGUARD — شرح الـ Database</h1>
+    <p>20 جدول — كل جدول مشروح بشكل بسيط مع الهدف منه والأعمدة والعلاقات</p>
+</div>
+
+<div class="layout">
+
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="sidebar">
+
+        <div class="sidebar-group">
+            <div class="sidebar-group-title">Core / Auth</div>
+            <a class="sidebar-link" onclick="scrollTo('t1')"><span class="sidebar-dot" style="background:var(--cyan)"></span>users</a>
+            <a class="sidebar-link" onclick="scrollTo('t2')"><span class="sidebar-dot" style="background:var(--cyan)"></span>user_subscriptions</a>
+            <a class="sidebar-link" onclick="scrollTo('t3')"><span class="sidebar-dot" style="background:var(--cyan)"></span>organizations</a>
+            <a class="sidebar-link" onclick="scrollTo('t4')"><span class="sidebar-dot" style="background:var(--cyan)"></span>org_subscriptions</a>
+            <a class="sidebar-link" onclick="scrollTo('t5')"><span class="sidebar-dot" style="background:var(--cyan)"></span>org_members</a>
+        </div>
+
+        <div class="sidebar-group">
+            <div class="sidebar-group-title">Projects</div>
+            <a class="sidebar-link" onclick="scrollTo('t6')"><span class="sidebar-dot" style="background:var(--yellow)"></span>projects</a>
+            <a class="sidebar-link" onclick="scrollTo('t7')"><span class="sidebar-dot" style="background:var(--yellow)"></span>project_collaborators</a>
+            <a class="sidebar-link" onclick="scrollTo('t8')"><span class="sidebar-dot" style="background:var(--yellow)"></span>project_invitations</a>
+        </div>
+
+        <div class="sidebar-group">
+            <div class="sidebar-group-title">Scan System</div>
+            <a class="sidebar-link" onclick="scrollTo('t9')"><span class="sidebar-dot" style="background:var(--green)"></span>targets</a>
+            <a class="sidebar-link" onclick="scrollTo('t10')"><span class="sidebar-dot" style="background:var(--green)"></span>scan_modules</a>
+            <a class="sidebar-link" onclick="scrollTo('t11')"><span class="sidebar-dot" style="background:var(--green)"></span>scan_jobs</a>
+            <a class="sidebar-link" onclick="scrollTo('t12')"><span class="sidebar-dot" style="background:var(--green)"></span>scan_job_modules</a>
+            <a class="sidebar-link" onclick="scrollTo('t13')"><span class="sidebar-dot" style="background:var(--green)"></span>findings</a>
+            <a class="sidebar-link" onclick="scrollTo('t14')"><span class="sidebar-dot" style="background:var(--green)"></span>evidences</a>
+        </div>
+
+        <div class="sidebar-group">
+            <div class="sidebar-group-title">Phishing</div>
+            <a class="sidebar-link" onclick="scrollTo('t15')"><span class="sidebar-dot" style="background:var(--orange)"></span>phishing_campaigns</a>
+            <a class="sidebar-link" onclick="scrollTo('t16')"><span class="sidebar-dot" style="background:var(--orange)"></span>phishing_targets</a>
+            <a class="sidebar-link" onclick="scrollTo('t17')"><span class="sidebar-dot" style="background:var(--orange)"></span>phishing_events</a>
+        </div>
+
+        <div class="sidebar-group">
+            <div class="sidebar-group-title">Reporting</div>
+            <a class="sidebar-link" onclick="scrollTo('t18')"><span class="sidebar-dot" style="background:var(--purple)"></span>reports</a>
+            <a class="sidebar-link" onclick="scrollTo('t19')"><span class="sidebar-dot" style="background:var(--purple)"></span>risk_scores</a>
+            <a class="sidebar-link" onclick="scrollTo('t20')"><span class="sidebar-dot" style="background:var(--purple)"></span>audit_logs</a>
+        </div>
+
+    </aside>
+
+    <!-- ══ MAIN ══ -->
+    <main class="main">
+
+        <!-- ════════════════════════════ CORE ════════════════════════════ -->
+        <div class="section-divider">
+            <span class="section-icon">🔵</span>
+            <div>
+                <div class="section-title-text">Core / Auth / Multi-Tenant</div>
+                <div class="section-subtitle">المستخدمين، الشركات، والاشتراكات</div>
+            </div>
+        </div>
+
+        <!-- T1: users -->
+        <div class="table-card open" data-color="cyan" id="t1">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">01</span>
+                    <div>
+                        <div class="card-title">users</div>
+                        <div class="card-purpose">بيانات كل شخص بيستخدم المنصة</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-cyan">CORE</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> بطاقة هوية — فيها كل معلومات الشخص، إيميله، كلمة السر، وآخر مرة دخل.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr>
+                        <td class="col-icon"><span class="icon-pk">🔑</span></td>
+                        <td class="col-name-cell name-pk">id</td>
+                        <td class="col-type-cell">UUID</td>
+                        <td class="col-desc-cell">معرف فريد لكل مستخدم — مثل رقم قومي مش بيتكرر</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">email</td>
+                        <td class="col-type-cell">VARCHAR UNIQUE</td>
+                        <td class="col-desc-cell">الإيميل — لازم يكون فريد، مينفعش اتنين بنفس الإيميل</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">password</td>
+                        <td class="col-type-cell">VARCHAR</td>
+                        <td class="col-desc-cell">كلمة السر — بتتحفظ مشفرة (Hash) مش نص عادي</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">name</td>
+                        <td class="col-type-cell">VARCHAR</td>
+                        <td class="col-desc-cell">اسم المستخدم اللي بيظهر في الـ Dashboard</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">avatar_url</td>
+                        <td class="col-type-cell">TEXT</td>
+                        <td class="col-desc-cell">رابط صورة البروفايل</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">email_verified_at</td>
+                        <td class="col-type-cell">TIMESTAMP</td>
+                        <td class="col-desc-cell">إمتى اتأكد من الإيميل — لو NULL معناها لسه ما اتأكدش</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">two_factor_secret</td>
+                        <td class="col-type-cell">VARCHAR</td>
+                        <td class="col-desc-cell">الكود السري لميزة الـ 2FA (التحقق بخطوتين)</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">two_factor_enabled</td>
+                        <td class="col-type-cell">BOOLEAN</td>
+                        <td class="col-desc-cell">هل الـ 2FA شغال؟ true أو false</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">last_login_at</td>
+                        <td class="col-type-cell">TIMESTAMP</td>
+                        <td class="col-desc-cell">آخر مرة المستخدم دخل — بيتحدث كل Login</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">created_at / updated_at</td>
+                        <td class="col-type-cell">TIMESTAMP</td>
+                        <td class="col-desc-cell">Laravel بيعملهم تلقائياً — إمتى اتنشئ وإمتى اتعدل</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="col-name-cell name-normal">deleted_at</td>
+                        <td class="col-type-cell">TIMESTAMP</td>
+                        <td class="col-desc-cell">Soft Delete — لو فيه قيمة يبقى محذوف بدون ما يتمسح فعلاً</td>
+                    </tr>
+                </table>
+                <div class="relations">
+                    <div class="relations-title">علاقاته</div>
+                    <div class="rel-list">
+                        <span class="rel-pill">له <span>subscription</span> واحدة</span>
+                        <span class="rel-pill">عضو في <span>organizations</span> كتير</span>
+                        <span class="rel-pill">عنده <span>projects</span> شخصية</span>
+                        <span class="rel-pill">مشارك في <span>projects</span> ناس تانية</span>
+                    </div>
+                </div>
+                <div class="example-box">
+                    <strong>مثال:</strong> Ahmed بيسجل بـ <code>ahmed@gmail.com</code> — بيتنشئ له سطر في الجدول ده بـ UUID فريد وكلمة السر مشفرة.
+                </div>
+            </div>
+        </div>
+
+        <!-- T2: user_subscriptions -->
+        <div class="table-card" data-color="cyan" id="t2">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">02</span>
+                    <div>
+                        <div class="card-title">user_subscriptions</div>
+                        <div class="card-purpose">الباقة الشخصية لكل مستخدم</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-cyan">CORE</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> بطاقة الاشتراك في النادي — بيقولك إيه الباقة وإمتى بتنتهي وإيه الـ Limits.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td class="col-desc-cell">معرف الاشتراك</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">user_id</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">هذا الاشتراك تبع مين؟</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">plan</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell">نوع الباقة: <code>free</code> أو <code>starter</code> أو <code>pro</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">status</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell">حالة الاشتراك: <code>active</code> أو <code>expired</code> أو <code>cancelled</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">max_projects</td><td class="col-type-cell">INT</td><td class="col-desc-cell">أقصى عدد مشاريع مسموح بيها — Free=3, Pro=20</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">max_targets</td><td class="col-type-cell">INT</td><td class="col-desc-cell">أقصى عدد أهداف مسموح بيها</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">max_scans_per_month</td><td class="col-type-cell">INT</td><td class="col-desc-cell">كم Scan مسموح في الشهر</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">started_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى بدأ الاشتراك</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">expires_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى بينتهي — لو NULL يبقى مش بينتهي (Free)</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>مثال:</strong> Ahmed اختار الباقة المجانية — بيتنشئ له سطر: <code>plan=free, max_projects=3, max_targets=10</code>. لما يحاول ينشئ مشروع 4 — النظام بيشيك على الجدول ده ويمنعه.
+                </div>
+            </div>
+        </div>
+
+        <!-- T3: organizations -->
+        <div class="table-card" data-color="cyan" id="t3">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">03</span>
+                    <div>
+                        <div class="card-title">organizations</div>
+                        <div class="card-purpose">الشركات والفرق على المنصة</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-cyan">CORE</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> شركة مسجلة — ليها اسم ودومين وأعضاء. مش إجبارية، الـ User يقدر يشتغل من غيرها.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td class="col-desc-cell">معرف الشركة</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">owner_id</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">مين اللي أنشأ الشركة وهو الـ Owner</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">name</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">اسم الشركة مثلاً "SecureTeam"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">slug</td><td class="col-type-cell">VARCHAR UNIQUE</td><td class="col-desc-cell">الاسم المختصر للـ URL مثلاً "secure-team"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">domain</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">دومين الشركة "secureteam.com" — بيستخدم للتحقق في الـ Phishing</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">logo_url</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">رابط لوجو الشركة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">deleted_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">Soft Delete</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>مثال:</strong> Ahmed أنشأ شركة "SecureTeam" — بيتنشئ سطر وأوتوماتيك بيتضاف كـ Owner في جدول <code>organization_members</code>.
+                </div>
+            </div>
+        </div>
+
+        <!-- T4: organization_subscriptions -->
+        <div class="table-card" data-color="cyan" id="t4">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">04</span>
+                    <div>
+                        <div class="card-title">organization_subscriptions</div>
+                        <div class="card-purpose">باقة الشركة — منفصلة عن باقة الـ User</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-cyan">CORE</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> اشتراك النت للشركة — مختلف عن الاشتراك الشخصي. الشركة ممكن تبقى على Enterprise والـ User شخصياً على Free.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td class="col-desc-cell">معرف الاشتراك</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">organization_id</td><td class="col-type-cell">FK → organizations</td><td class="col-desc-cell">هذا الاشتراك تبع أنهي شركة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">plan</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>starter</code> أو <code>pro</code> أو <code>enterprise</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">status</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell">حالة الاشتراك</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">max_projects</td><td class="col-type-cell">INT</td><td class="col-desc-cell">أقصى مشاريع للشركة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">max_targets</td><td class="col-type-cell">INT</td><td class="col-desc-cell">أقصى أهداف للشركة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">max_members</td><td class="col-type-cell">INT</td><td class="col-desc-cell">أقصى عدد أعضاء في الفريق</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">expires_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">تاريخ انتهاء اشتراك الشركة</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- T5: organization_members -->
+        <div class="table-card" data-color="cyan" id="t5">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">05</span>
+                    <div>
+                        <div class="card-title">organization_members</div>
+                        <div class="card-purpose">مين في أنهي شركة وبأي دور</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-cyan">PIVOT</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> HR Record في الشركة — بيقول Ahmed شغال في SecureTeam كـ Admin من تاريخ كذا.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">organization_id</td><td class="col-type-cell">FK → organizations</td><td class="col-desc-cell">أنهي شركة</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">user_id</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">أنهي مستخدم</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">role</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>owner</code> كل الصلاحيات / <code>admin</code> يضيف ويشيل / <code>member</code> يشتغل / <code>viewer</code> يشوف بس</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">joined_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى انضم للشركة</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>مثال — 3 سطور في الجدول:</strong><br>
+                    <code>Ahmed → SecureTeam → owner</code><br>
+                    <code>Sara → SecureTeam → admin</code><br>
+                    <code>Mohamed → SecureTeam → member</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════ PROJECTS ════════════════════════════ -->
+        <div class="section-divider">
+            <span class="section-icon">🟡</span>
+            <div>
+                <div class="section-title-text">Projects & Collaboration</div>
+                <div class="section-subtitle">المشاريع والفريق والدعوات</div>
+            </div>
+        </div>
+
+        <!-- T6: projects -->
+        <div class="table-card" data-color="yellow" id="t6">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">06</span>
+                    <div>
+                        <div class="card-title">projects</div>
+                        <div class="card-purpose">المشاريع — شخصية أو تابعة لشركة</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-yellow">PROJECT</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> ملف العميل عند المحامي — فيه اسم القضية، من فتحها، وإمتى. ممكن يكون ملف شخصي للمحامي أو ملف للمكتب كله.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td class="col-desc-cell">معرف المشروع</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">owner_type</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">المشروع تبع مين: <code>App\Models\User</code> أو <code>App\Models\Organization</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">owner_id</td><td class="col-type-cell">UUID</td><td class="col-desc-cell">الـ ID بتاع الـ User أو الـ Organization</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">created_by</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">مين اللي ضغط "Create Project" فعلياً</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">name</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">اسم المشروع</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">description</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">وصف المشروع</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">status</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>active</code> شغال / <code>archived</code> محفوظ / <code>completed</code> خلص</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">max_collaborators</td><td class="col-type-cell">INT</td><td class="col-desc-cell">أقصى عدد أعضاء في المشروع حسب الباقة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">start_date / end_date</td><td class="col-type-cell">DATE</td><td class="col-desc-cell">تاريخ بداية ونهاية المشروع</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>مثال — مشروع شخصي:</strong> <code>owner_type = User, owner_id = Ahmed's UUID</code><br>
+                    <strong>مثال — مشروع للشركة:</strong> <code>owner_type = Organization, owner_id = SecureTeam's UUID</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- T7: project_collaborators -->
+        <div class="table-card" data-color="yellow" id="t7">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">07</span>
+                    <div>
+                        <div class="card-title">project_collaborators</div>
+                        <div class="card-purpose">مين شغال على أنهي مشروع بأي صلاحية</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-yellow">COLLAB</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> قائمة الدخول على مستند Google Docs — بيقول مين عنده صلاحية إيه.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">project_id</td><td class="col-type-cell">FK → projects</td><td class="col-desc-cell">أنهي مشروع</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">user_id</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">أنهي مستخدم</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">invited_by</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">مين بعتله الدعوة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">role</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>owner</code> كل شيء / <code>editor</code> يشتغل ويعدل / <code>viewer</code> يشوف بس</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">status</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>pending</code> لسه ما قبلش / <code>accepted</code> قبل / <code>rejected</code> رفض</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">invited_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى اتبعتله الدعوة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">accepted_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى قبل — NULL لو لسه ما قبلش</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>مثال:</strong> Ahmed دعا Sara على مشروع "Client XYZ":<br>
+                    <code>project_id=XYZ, user_id=Sara, role=editor, status=pending</code><br>
+                    بعد ما Sara قبلت: <code>status=accepted, accepted_at=الوقت الحالي</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- T8: project_invitations -->
+        <div class="table-card" data-color="yellow" id="t8">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">08</span>
+                    <div>
+                        <div class="card-title">project_invitations</div>
+                        <div class="card-purpose">الدعوات اللي لسه ما اتقبلتش</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-yellow">COLLAB</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> رابط دعوة الزفاف — فيه رابط فريد وتاريخ انتهاء. لو فتحته قبل الموعد تقدر تحضر، لو بعده خلص.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">project_id</td><td class="col-type-cell">FK → projects</td><td class="col-desc-cell">الدعوة على أنهي مشروع</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">invited_by</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">مين بعت الدعوة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">email</td><td class="col-type-cell">VARCHAR nullable</td><td class="col-desc-cell">إيميل المدعو — ممكن يبقى فاضي لو بعت Link بس</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">token</td><td class="col-type-cell">VARCHAR UNIQUE</td><td class="col-desc-cell">الرابط السري — مثلاً <code>abc123xyz</code> في cyberguard.io/invite/abc123xyz</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">role</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell">الصلاحية اللي هياخدها لما يقبل: <code>editor</code> أو <code>viewer</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">status</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>pending</code> / <code>accepted</code> / <code>expired</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">expires_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">بعد 7 أيام الدعوة بتنتهي تلقائياً</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>الفرق بين الجدولين:</strong><br>
+                    <code>project_invitations</code> → الدعوة نفسها (الرابط + المدة)<br>
+                    <code>project_collaborators</code> → بعد ما يقبل الدعوة (العضوية الفعلية)
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════ SCAN ════════════════════════════ -->
+        <div class="section-divider">
+            <span class="section-icon">🟢</span>
+            <div>
+                <div class="section-title-text">Scan System</div>
+                <div class="section-subtitle">الأهداف، الفحوصات، والثغرات</div>
+            </div>
+        </div>
+
+        <!-- T9: targets -->
+        <div class="table-card" data-color="green" id="t9">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">09</span>
+                    <div>
+                        <div class="card-title">targets</div>
+                        <div class="card-purpose">الأهداف اللي هيتعمل عليها الفحص</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-green">SCAN</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> عنوان البيت اللي هتعمل فيه كشف — ممكن يكون دومين أو IP أو شبكة كاملة.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">project_id</td><td class="col-type-cell">FK → projects</td><td class="col-desc-cell">الهدف ده تابع لأنهي مشروع</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">type</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>domain</code> موقع / <code>ip</code> عنوان IP / <code>network</code> شبكة كاملة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">value</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">القيمة الفعلية: <code>example.com</code> أو <code>192.168.1.1</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">label</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">اسم وصفي بتحدده إنت: "Production Server"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">is_verified</td><td class="col-type-cell">BOOLEAN</td><td class="col-desc-cell">هل إثبت إنك مالك الدومين ده؟ لازم true عشان تعمل Scan</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">risk_score</td><td class="col-type-cell">DECIMAL</td><td class="col-desc-cell">آخر تقييم خطورة للهدف من 0 لـ 100</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">last_scanned_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">آخر مرة اتعمل عليه Scan</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- T10: scan_modules -->
+        <div class="table-card" data-color="green" id="t10">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">10</span>
+                    <div>
+                        <div class="card-title">scan_modules</div>
+                        <div class="card-purpose">أدوات الفحص المتاحة في المنصة</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-green">SCAN</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> قائمة الأدوات في صندوق العدة — SQLi, XSS, Port Scanner... كل أداة ليها اسم وتصنيف.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">name</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">الاسم الكامل: "SQL Injection Scanner"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">slug</td><td class="col-type-cell">VARCHAR UNIQUE</td><td class="col-desc-cell">الاسم المختصر: <code>sqli</code> — بيتستخدم في الكود</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">category</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>web</code> لثغرات المواقع / <code>network</code> للشبكات / <code>recon</code> للاستطلاع</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">description</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">شرح بسيط للأداة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">is_active</td><td class="col-type-cell">BOOLEAN</td><td class="col-desc-cell">هل الأداة متاحة حالياً؟ لو false مش هتظهر للمستخدم</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>أمثلة على سطور في الجدول:</strong><br>
+                    <code>sqli → SQL Injection → web</code><br>
+                    <code>xss → Cross-Site Scripting → web</code><br>
+                    <code>port-scan → Port Scanner → network</code><br>
+                    <code>subdomain → Subdomain Enum → recon</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- T11: scan_jobs -->
+        <div class="table-card" data-color="green" id="t11">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">11</span>
+                    <div>
+                        <div class="card-title">scan_jobs</div>
+                        <div class="card-purpose">كل عملية فحص بيتسجل هنا</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-green">SCAN</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> أمر الشغل في المصنع — بيقول هيتعمل إيه، على مين، من إمتى، وإمتى خلص.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">target_id</td><td class="col-type-cell">FK → targets</td><td class="col-desc-cell">الفحص هيتعمل على أنهي هدف</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">project_id</td><td class="col-type-cell">FK → projects</td><td class="col-desc-cell">تابع لأنهي مشروع</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">triggered_by</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">مين ضغط زرار "Start Scan"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">scan_type</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>auto</code> كل الأدوات تلقائياً / <code>targeted</code> أدوات مختارة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">status</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>pending</code>→<code>running</code>→<code>completed</code> أو <code>failed</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">container_id</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">ID الـ Docker Container اللي اشتغل فيه الـ Scan</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">started_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى بدأ فعلاً</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">finished_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى خلص — NULL لو لسه شغال</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">error_log</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">لو فشل، إيه المشكلة؟ بيتحفظ هنا للـ Debug</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- T12: scan_job_modules -->
+        <div class="table-card" data-color="green" id="t12">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">12</span>
+                    <div>
+                        <div class="card-title">scan_job_modules</div>
+                        <div class="card-purpose">أنهي أدوات اشتغلت في كل Scan</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-green">PIVOT</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> قائمة الفحوصات اللي الدكتور عملها في الزيارة — كل فحص ليه حالته الخاصة.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">scan_job_id</td><td class="col-type-cell">FK → scan_jobs</td><td class="col-desc-cell">الـ Scan اللي اشتغلت فيه</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">module_id</td><td class="col-type-cell">FK → scan_modules</td><td class="col-desc-cell">أنهي أداة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">status</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell">حالة الأداة دي تحديداً: <code>pending/running/done/failed</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">duration_ms</td><td class="col-type-cell">INT</td><td class="col-desc-cell">كم millisecond أخدت الأداة دي</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>مثال:</strong> Scan #123 اشتغل بـ 3 أدوات:<br>
+                    <code>Scan#123 → sqli → done → 5000ms</code><br>
+                    <code>Scan#123 → xss → done → 3000ms</code><br>
+                    <code>Scan#123 → port-scan → failed</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- T13: findings -->
+        <div class="table-card" data-color="green" id="t13">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">13</span>
+                    <div>
+                        <div class="card-title">findings</div>
+                        <div class="card-purpose">الثغرات اللي لقاها الـ Scan</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-green">SCAN</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> تقرير الطبيب بعد الكشف — بيقول إيه المشكلة، مدى خطورتها، وإزاي تعالجها.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">scan_job_id</td><td class="col-type-cell">FK → scan_jobs</td><td class="col-desc-cell">الـ Scan اللي لقاها</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">target_id</td><td class="col-type-cell">FK → targets</td><td class="col-desc-cell">الثغرة دي في أنهي هدف</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">title</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">اسم الثغرة: "SQL Injection in /login"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">description</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">شرح تفصيلي للثغرة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">severity</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>critical🔴</code> <code>high🟠</code> <code>medium🟡</code> <code>low🟢</code> <code>info⚪</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">cvss_score</td><td class="col-type-cell">DECIMAL</td><td class="col-desc-cell">رقم من 0 لـ 10 بيقيّم الخطورة دولياً — مثلاً 9.8</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">cvss_vector</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">تفاصيل الـ CVSS: <code>CVSS:3.1/AV:N/AC:L/...</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">cve_id</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">رقم الثغرة العالمي لو معروفة: <code>CVE-2024-1234</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">remediation</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">إزاي تصلح الثغرة دي</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">status</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>open</code> جديدة / <code>in_progress</code> بيشتغل عليها / <code>resolved</code> اتحلت / <code>false_positive</code> مش ثغرة فعلية</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">affected_url</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">الرابط اللي فيه الثغرة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">proof</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">الـ Payload اللي اتجرب وأثبت الثغرة</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- T14: evidences -->
+        <div class="table-card" data-color="green" id="t14">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">14</span>
+                    <div>
+                        <div class="card-title">evidences</div>
+                        <div class="card-purpose">الأدلة على كل ثغرة — صور ولوجز</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-green">SCAN</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> ملف الأدلة في القضية — بيحتوي على الصور والمستندات اللي بتثبت وجود الثغرة.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">finding_id</td><td class="col-type-cell">FK → findings</td><td class="col-desc-cell">الدليل ده تابع لأنهي ثغرة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">type</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>screenshot</code> صورة / <code>log</code> ملف log / <code>request</code> طلب HTTP / <code>response</code> رد السيرفر</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">file_url</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">رابط الملف على الـ Storage (S3)</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">mime_type</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">نوع الملف: <code>image/png</code> أو <code>text/plain</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">size_bytes</td><td class="col-type-cell">BIGINT</td><td class="col-desc-cell">حجم الملف بالـ Bytes</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">uploaded_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى اترفع الملف</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>مثال:</strong> ثغرة SQL Injection عندها 3 أدلة:<br>
+                    <code>screenshot → صورة للصفحة وهي بترجع Error</code><br>
+                    <code>request → الـ HTTP Request اللي استغل الثغرة</code><br>
+                    <code>response → رد السيرفر اللي أكد الثغرة</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════ PHISHING ════════════════════════════ -->
+        <div class="section-divider">
+            <span class="section-icon">🟠</span>
+            <div>
+                <div class="section-title-text">Phishing Module</div>
+                <div class="section-subtitle">اختبار وعي الموظفين</div>
+            </div>
+        </div>
+
+        <!-- T15: phishing_campaigns -->
+        <div class="table-card" data-color="orange" id="t15">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">15</span>
+                    <div>
+                        <div class="card-title">phishing_campaigns</div>
+                        <div class="card-purpose">حملات اختبار الموظفين</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-orange">PHISH</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> حملة إعلانية — ليها اسم وإيميل محتوى وتاريخ إرسال. الهدف منها اختبار مش خداع فعلي.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">project_id</td><td class="col-type-cell">FK → projects</td><td class="col-desc-cell">الحملة تابعة لأنهي مشروع</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">created_by</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">مين صمم الحملة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">name</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">اسم الحملة: "Q1 2025 Security Test"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">status</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>draft</code> تحت التصميم / <code>active</code> شغالة / <code>completed</code> / <code>paused</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">email_subject</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">موضوع الإيميل المزيف: "مهم: تحديث بيانات الدخول"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">email_body</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">محتوى الإيميل المزيف</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">phishing_url</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">الرابط المزيف اللي هيضغط عليه الموظف</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">sender_name</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">اسم المرسل الوهمي: "IT Department"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">authorized_domain</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">دومين الشركة المصرح بيها — أمان ضد الاستخدام الخاطئ</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">scheduled_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى هتتبعت الحملة</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- T16: phishing_targets -->
+        <div class="table-card" data-color="orange" id="t16">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">16</span>
+                    <div>
+                        <div class="card-title">phishing_targets</div>
+                        <div class="card-purpose">الموظفين المستهدفين في الحملة</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-orange">PHISH</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> قائمة المدعوين — كل موظف ليه رابط دعوة فريد خاص بيه عشان نعرف مين ضغط.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">campaign_id</td><td class="col-type-cell">FK → campaigns</td><td class="col-desc-cell">تابع لأنهي حملة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">employee_email</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">إيميل الموظف</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">employee_name</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">اسم الموظف</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">department</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">القسم: "Finance" أو "HR" أو "IT"</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">tracking_token</td><td class="col-type-cell">VARCHAR UNIQUE</td><td class="col-desc-cell">رمز سري فريد لكل موظف — بيتحفظ في الرابط عشان يتعرف</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">sent_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى اتبعتله الإيميل</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">awareness_score</td><td class="col-type-cell">INT</td><td class="col-desc-cell">تقييم وعيه من 0 لـ 100: 100=ممتاز لم يضغط، 0=كتب بياناته</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- T17: phishing_events -->
+        <div class="table-card" data-color="orange" id="t17">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">17</span>
+                    <div>
+                        <div class="card-title">phishing_events</div>
+                        <div class="card-purpose">تتبع كل تفاعل موظف مع الإيميل</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-orange">PHISH</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> سجل الأحداث — كل خطوة الموظف عملها بتتسجل كـ event منفصل بالوقت.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">phishing_target_id</td><td class="col-type-cell">FK → phishing_targets</td><td class="col-desc-cell">الحدث ده خاص بأنهي موظف</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">campaign_id</td><td class="col-type-cell">FK → campaigns</td><td class="col-desc-cell">في إطار أنهي حملة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">event_type</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>sent</code> اتبعت / <code>opened</code> فتح / <code>clicked</code> ضغط / <code>submitted</code> كتب بيانات</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">ip_address</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">من أنهي IP فتح الإيميل أو ضغط</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">user_agent</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">أنهي متصفح أو موبايل استخدم</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">submitted_data</td><td class="col-type-cell">JSON</td><td class="col-desc-cell">البيانات اللي كتبها الموظف — بتتحفظ مشفرة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">occurred_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى حصل الحدث بالضبط</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>مثال — Sara وخلال الحملة عملت 3 events:</strong><br>
+                    <code>sent → 9:00 AM</code> ← الإيميل اتبعت<br>
+                    <code>opened → 9:15 AM</code> ← Sara فتحت الإيميل<br>
+                    <code>clicked → 9:16 AM</code> ← ضغطت على الرابط
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════ REPORTING ════════════════════════════ -->
+        <div class="section-divider">
+            <span class="section-icon">🟣</span>
+            <div>
+                <div class="section-title-text">Reporting & Audit</div>
+                <div class="section-subtitle">التقارير وتقييم الخطورة وسجل العمليات</div>
+            </div>
+        </div>
+
+        <!-- T18: reports -->
+        <div class="table-card" data-color="purple" id="t18">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">18</span>
+                    <div>
+                        <div class="card-title">reports</div>
+                        <div class="card-purpose">التقارير المولّدة للعملاء</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-purple">REPORT</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> ملف PDF الجاهز للعميل — المنصة بتولده تلقائياً وبتحفظ مكانه عشان يتحمل في أي وقت.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">project_id</td><td class="col-type-cell">FK nullable</td><td class="col-desc-cell">لو تقرير مشروع — وإلا NULL</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">target_id</td><td class="col-type-cell">FK nullable</td><td class="col-desc-cell">لو تقرير هدف معين — وإلا NULL</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">generated_by</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">مين طلب توليد التقرير</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">title</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">عنوان التقرير</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">type</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>project</code> أو <code>target</code> أو <code>phishing</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">format</td><td class="col-type-cell">ENUM</td><td class="col-desc-cell"><code>pdf</code> أو <code>json</code> أو <code>html</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">file_url</td><td class="col-type-cell">TEXT</td><td class="col-desc-cell">رابط التحميل بعد ما اتولد</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">summary</td><td class="col-type-cell">JSON</td><td class="col-desc-cell">إحصائيات سريعة: عدد الثغرات ومستوى الخطورة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">generated_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى اتولد التقرير</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- T19: risk_scores -->
+        <div class="table-card" data-color="purple" id="t19">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">19</span>
+                    <div>
+                        <div class="card-title">risk_scores</div>
+                        <div class="card-purpose">تاريخ تقييم الخطورة لكل هدف</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-purple">REPORT</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> تحليل الدم الشهري — كل شهر بيتسجل التحليل الجديد وبتشوف إيه اللي اتحسن.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">target_id</td><td class="col-type-cell">FK → targets</td><td class="col-desc-cell">التقييم ده لأنهي هدف</td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">scan_job_id</td><td class="col-type-cell">FK → scan_jobs</td><td class="col-desc-cell">التقييم اتحسب بعد أنهي Scan</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">overall_score</td><td class="col-type-cell">DECIMAL</td><td class="col-desc-cell">الدرجة الكلية من 100 — كلما قلت كان أحسن</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">critical_count</td><td class="col-type-cell">INT</td><td class="col-desc-cell">عدد الثغرات الحرجة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">high_count</td><td class="col-type-cell">INT</td><td class="col-desc-cell">عدد الثغرات العالية</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">medium_count</td><td class="col-type-cell">INT</td><td class="col-desc-cell">عدد الثغرات المتوسطة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">low_count</td><td class="col-type-cell">INT</td><td class="col-desc-cell">عدد الثغرات المنخفضة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">calculated_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">إمتى اتحسب التقييم</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>ليه نحفظ التاريخ؟</strong><br>
+                    Scan في يناير: <code>score=85, critical=3</code><br>
+                    بعد الإصلاح Scan في فبراير: <code>score=20, critical=0</code><br>
+                    ده بيعملك Trend Chart يوضح التحسن للعميل ✅
+                </div>
+            </div>
+        </div>
+
+        <!-- T20: audit_logs -->
+        <div class="table-card" data-color="purple" id="t20">
+            <div class="card-head" onclick="toggleCard(this)">
+                <div class="card-head-right">
+                    <span class="card-num">20</span>
+                    <div>
+                        <div class="card-title">audit_logs</div>
+                        <div class="card-purpose">سجل كل العمليات اللي بتحصل في النظام</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                    <span class="card-badge badge-purple">AUDIT</span>
+                    <span class="toggle-btn">▼</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="analogy">
+                    <strong>تخيله زي:</strong> كاميرات المراقبة — بيسجل كل حاجة بيعملها أي مستخدم في أي وقت. مش بيتحذف أبداً.
+                </div>
+                <table class="cols-table">
+                    <tr><th class="col-icon"></th><th>اسم العمود</th><th>النوع</th><th>الشرح</th></tr>
+                    <tr><td><span class="icon-pk">🔑</span></td><td class="col-name-cell name-pk">id</td><td class="col-type-cell">UUID</td><td></td></tr>
+                    <tr><td><span class="icon-fk">⇢</span></td><td class="col-name-cell name-fk">user_id</td><td class="col-type-cell">FK → users</td><td class="col-desc-cell">مين عمل الـ Action — nullable لو System Action</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">owner_type / owner_id</td><td class="col-type-cell">VARCHAR / UUID</td><td class="col-desc-cell">الـ Action حصل في سياق User أو Organization</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">action</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">إيه اللي حصل: <code>scan.started</code> أو <code>finding.resolved</code> أو <code>user.invited</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">entity_type</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">الـ Action حصل على أنهي نوع: <code>ScanJob</code> أو <code>Finding</code></td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">entity_id</td><td class="col-type-cell">UUID</td><td class="col-desc-cell">الـ ID بتاع الـ Entity</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">metadata</td><td class="col-type-cell">JSON</td><td class="col-desc-cell">تفاصيل إضافية — مثلاً القيمة القديمة والجديدة</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">ip_address</td><td class="col-type-cell">VARCHAR</td><td class="col-desc-cell">من أنهي IP اتعمل الـ Action</td></tr>
+                    <tr><td></td><td class="col-name-cell name-normal">created_at</td><td class="col-type-cell">TIMESTAMP</td><td class="col-desc-cell">بس created_at — مفيش updated_at لأن السجل مش بيتعدل</td></tr>
+                </table>
+                <div class="example-box">
+                    <strong>أمثلة على سطور في الجدول:</strong><br>
+                    <code>Ahmed → scan.started → ScanJob#123 → 192.168.1.1</code><br>
+                    <code>Sara → finding.resolved → Finding#456</code><br>
+                    <code>Ahmed → collaborator.removed → User#789</code>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    function toggleCard(head) {
+        const card = head.closest('.table-card');
+        card.classList.toggle('open');
+    }
+
+    function scrollTo(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (!el.classList.contains('open')) el.classList.add('open');
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            event.target.closest('.sidebar-link').classList.add('active');
+        }
+    }
+
+    // Progress bar
+    window.addEventListener('scroll', () => {
+        const el = document.documentElement;
+        const pct = (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100;
+        document.getElementById('progress').style.width = pct + '%';
+    });
+
+    // Highlight active sidebar link on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const id = e.target.id;
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                const active = document.querySelector(`.sidebar-link[onclick="scrollTo('${id}')"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { threshold: 0.3, rootMargin: '-80px 0px -60% 0px' });
+
+    document.querySelectorAll('.table-card[id]').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
