@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use PragmaRX\Google2FA\Google2FA;
 
 class AuthenticationController extends Controller
 {
@@ -64,6 +65,18 @@ class AuthenticationController extends Controller
                 'message' => 'Please verify your email address'
             ], 401);
         }
+
+        // Check if 2FA is enabled
+        if ($user->two_factor_enabled) {
+            return response()->json([
+                'status' => 'success',
+                'message' => '2FA verification required',
+                'data' => [
+                    'requires_2fa' => true,
+                    'email' => $user->email
+                ]
+            ], 200);
+        }
         
         // Create API token (using Sanctum)
         $token = $user->createToken('auth-token')->plainTextToken;
@@ -76,6 +89,7 @@ class AuthenticationController extends Controller
             'status' => 'success',
             'message' => 'Login successful',
             'data' => [
+                'requires_2fa' => false,
                 'user' => [
                     'id' => $user->id,
                     'email' => $user->email,
