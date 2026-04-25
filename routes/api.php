@@ -3,13 +3,15 @@
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\TwoFactorAuthController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\CollaboratorController;
 use App\Models\User;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PasswordResetController;
-
+use App\Http\Controllers\ScanController;
 
 /**
  * Authentication Route
@@ -63,25 +65,40 @@ Route::prefix('auth')->group(function() {
 /**
  * Email Verify Routes 
  */
-// - Send Email Verification
-Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'sendEmailVerification'])
+Route::prefix('email')->group(function() {
+    // - Send Email Verification
+    Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'sendEmailVerification'])
         ->middleware('signed')->name('verification.verify');
-// - Resend Email Verification
-Route::post('/email/verification-notification/{id}', [EmailVerificationController::class, 'resendEmailVerification'])
+    // - Resend Email Verification
+    Route::post('/verification-notification/{id}', [EmailVerificationController::class, 'resendEmailVerification'])
         ->middleware(['throttle:6,1','auth:sanctum'])->name('verification.send');
+});
 
 
+// Route::get('/profile/{id}' , function($id) {
+//     $user = User::findOrFail($id);
+//     if($user->hasVerifiedEmail())
+//     {
+//         return response()->json([
+//         'msg' => "Hello in profile"
+//     ]);
+//     }
+//     return response()->json([
+//         'msg' => "Please Verifiy Your Email"
+//     ], 401);
+// })->middleware(['auth:sanctum']);
 
 
-Route::get('/profile/{id}' , function($id) {
-    $user = User::findOrFail($id);
-    if($user->hasVerifiedEmail())
-    {
-        return response()->json([
-        'msg' => "Hello in profile"
-    ]);
-    }
-    return response()->json([
-        'msg' => "Please Verifiy Your Email"
-    ], 401);
-})->middleware(['auth:sanctum']);
+Route::middleware('auth:sanctum')->group(function() {
+    // ── Projects Resource ─────────────────
+    Route::apiResource('projects', ProjectController::class);
+
+    // ── Collaborators ─────────────────────
+    // Create Link To Invite User To Project
+    Route::post('projects/{project}/invite' , [CollaboratorController::class, 'invite']);
+    // Accept Invitation
+    Route::post('invitations/{token}/accept' , [CollaboratorController::class, 'accept']);
+
+    Route::post('/scan/start', [ScanController::class, 'startScan']);
+    Route::get('/scan/{scanJobId}/status', [ScanController::class, 'getScanStatus']);
+});

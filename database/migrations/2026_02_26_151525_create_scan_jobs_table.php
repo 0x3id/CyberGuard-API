@@ -28,7 +28,8 @@ return new class extends Migration
 
             // auto
             // targeted
-            $table->enum('scan_type', ['auto', 'targeted']);
+            // web
+            $table->enum('scan_type', ['auto', 'targeted', 'web']);
 
             // pending → running → completed / failed
             $table->enum('status', ['pending', 'running', 'completed', 'failed'])

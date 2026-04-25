@@ -1,0 +1,101 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+
+class Project extends Model
+{
+    use HasUuids, SoftDeletes;
+
+    protected $fillable = [
+        'owner_type',
+        'owner_id',
+        'created_by',
+        'name',
+        'description',
+        'status',
+        'start_date',
+        'end_date',
+        'max_collaborators',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date'   => 'date',
+    ];
+
+    public function owner(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function collaborators(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'project_collaborators')
+                    ->withPivot('role', 'status', 'invited_by', 'invited_at', 'accepted_at')
+                    ->withTimestamps();
+    }
+
+    public function activeCollaborators(): BelongsToMany
+    {
+        return $this->collaborators()->wherePivot('status', 'accepted');
+    }
+
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(ProjectInvitation::class);
+    }
+
+    public function targets(): HasMany
+    {
+        return $this->hasMany(Target::class);
+    }
+
+    public function phishingCampaigns(): HasMany
+    {
+        return $this->hasMany(PhishingCampaign::class);
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class);
+    }
+
+    public function hasAccess(string $userId): bool
+    {
+        if ($this->created_by === $userId) return true;
+
+        return $this->activeCollaborators()
+                    ->where('user_id', $userId)
+                    ->exists();
+    }
+
+    public function getUserRole(string $userId): ?string
+    {
+        if ($this->created_by === $userId) return 'owner';
+
+        $collab = $this->collaborators()
+                        ->where('user_id', $userId)
+                        ->wherePivot('status', 'accepted')
+                        ->first();
+
+        return $collab?->pivot->role;
+    }
+
+    public function canAddCollaborator(): bool
+    {
+        return $this->activeCollaborators()->count() < $this->max_collaborators;
+    }
+}

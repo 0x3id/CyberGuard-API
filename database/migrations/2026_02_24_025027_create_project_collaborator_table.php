@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('project_collaborator', function (Blueprint $table) {
+            Schema::create('project_collaborators', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
             $table->foreignUuid('project_id')

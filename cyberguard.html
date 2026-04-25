@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberGuard — Comprehensive Platform Overview</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@700;900&display=swap');
+:root{--bg:#04080f;--bg2:#07111c;--card:#0b1a27;--card2:#0e2035;--border:#142d47;--border2:#1e4066;--cyan:#00d4ff;--green:#00ff9d;--orange:#ff6b35;--purple:#b46fff;--yellow:#ffd600;--red:#ff3d5a;--text:#d0e8f8;--text2:#7a9bb5;--text3:#3a5c78;--white:#ffffff}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.7}
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);background-size:50px 50px;animation:gridMove 20s linear infinite}
+@keyframes gridMove{to{background-position:50px 50px}}
+.hero-glow{position:absolute;width:700px;height:700px;background:radial-gradient(circle,rgba(0,212,255,0.07) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.hero-badge{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.3em;color:var(--cyan);border:1px solid rgba(0,212,255,0.3);background:rgba(0,212,255,0.06);padding:.4rem 1.2rem;border-radius:2px;margin-bottom:1.5rem;position:relative}
+.hero h1{font-family:'Orbitron',sans-serif;font-size:clamp(3rem,10vw,7rem);font-weight:900;color:var(--white);text-shadow:0 0 60px rgba(0,212,255,0.3);letter-spacing:.1em;line-height:1;position:relative}
+.hero h1 span{color:var(--cyan)}
+.hero-sub{font-size:clamp(1rem,2.5vw,1.25rem);color:var(--text2);margin-top:1rem;font-weight:300;max-width:640px;position:relative}
+.hero-desc{font-size:.95rem;color:var(--text2);margin-top:1.4rem;max-width:700px;line-height:1.9;position:relative}
+.hero-stats{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;margin-top:3rem;position:relative}
+.hero-stat{text-align:center;padding:1rem 1.5rem;border:1px solid var(--border);background:rgba(11,26,39,0.8);border-radius:4px;backdrop-filter:blur(10px)}
+.hero-stat-num{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:700;color:var(--cyan);line-height:1}
+.hero-stat-label{font-size:.75rem;color:var(--text2);margin-top:.3rem}
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);color:var(--text3);font-size:.7rem;letter-spacing:.2em;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+/* SHARED */
+section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
+.section-tag{font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;padding:.3rem .8rem;border-radius:2px;margin-bottom:1rem;display:inline-block}
+.tag-cyan  {color:var(--cyan);  border:1px solid rgba(0,212,255,0.3);  background:rgba(0,212,255,0.06)}
+.tag-green {color:var(--green); border:1px solid rgba(0,255,157,0.3);  background:rgba(0,255,157,0.06)}
+.tag-orange{color:var(--orange);border:1px solid rgba(255,107,53,0.3); background:rgba(255,107,53,0.06)}
+.tag-purple{color:var(--purple);border:1px solid rgba(180,111,255,0.3);background:rgba(180,111,255,0.06)}
+.tag-yellow{color:var(--yellow);border:1px solid rgba(255,214,0,0.3);  background:rgba(255,214,0,0.06)}
+.tag-red   {color:var(--red);   border:1px solid rgba(255,61,90,0.3);  background:rgba(255,61,90,0.06)}
+.section-title{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:var(--white);margin-bottom:.5rem}
+.section-desc{color:var(--text2);font-size:.95rem;margin-bottom:3rem;line-height:1.9;max-width:780px}
+.sep-line{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent)}
+/* CALLOUT */
+.callout{border-radius:6px;padding:1.2rem 1.6rem;margin:1.2rem 0;font-size:.88rem;line-height:1.8;display:flex;gap:1rem;align-items:flex-start}
+.callout-icon{flex-shrink:0;font-size:1.1rem;margin-top:1px}
+.callout-body{flex:1}
+.callout-title{font-weight:600;margin-bottom:.25rem}
+.co-info  {background:rgba(0,212,255,0.06);  border:1px solid rgba(0,212,255,0.2); color:#a8d8f0}.co-info  .callout-title{color:var(--cyan)}
+.co-warn  {background:rgba(255,214,0,0.05);  border:1px solid rgba(255,214,0,0.2); color:#d8c88a}.co-warn  .callout-title{color:var(--yellow)}
+.co-good  {background:rgba(0,255,157,0.05);  border:1px solid rgba(0,255,157,0.2); color:#90d8b0}.co-good  .callout-title{color:var(--green)}
+.co-danger{background:rgba(255,61,90,0.06);  border:1px solid rgba(255,61,90,0.2); color:#d8a0a8}.co-danger .callout-title{color:var(--red)}
+/* FLOW */
+.flow-wrapper{display:flex;flex-direction:column;gap:0;position:relative}
+.flow-step{display:grid;grid-template-columns:60px 1fr;gap:0 1.5rem;position:relative}
+.flow-spine{display:flex;flex-direction:column;align-items:center}
+.flow-dot{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;flex-shrink:0;position:relative;z-index:2}
+.flow-line{width:2px;flex:1;min-height:30px}
+.flow-content{padding-bottom:2.5rem;padding-top:.4rem}
+.dot-cyan  {background:rgba(0,212,255,0.15);  border:2px solid var(--cyan);  color:var(--cyan)}
+.dot-green {background:rgba(0,255,157,0.12);  border:2px solid var(--green); color:var(--green)}
+.dot-orange{background:rgba(255,107,53,0.12); border:2px solid var(--orange);color:var(--orange)}
+.dot-purple{background:rgba(180,111,255,0.12);border:2px solid var(--purple);color:var(--purple)}
+.dot-yellow{background:rgba(255,214,0,0.12);  border:2px solid var(--yellow);color:var(--yellow)}
+.dot-red   {background:rgba(255,61,90,0.12);  border:2px solid var(--red);   color:var(--red)}
+.line-cyan  {background:linear-gradient(180deg,var(--cyan),transparent)}
+.line-green {background:linear-gradient(180deg,var(--green),transparent)}
+.line-orange{background:linear-gradient(180deg,var(--orange),transparent)}
+.line-purple{background:linear-gradient(180deg,var(--purple),transparent)}
+.line-yellow{background:linear-gradient(180deg,var(--yellow),transparent)}
+.line-red   {background:linear-gradient(180deg,var(--red),transparent)}
+.flow-step-title{font-size:1.1rem;font-weight:600;color:var(--white);margin-bottom:.5rem}
+.flow-step-desc{color:var(--text2);font-size:.88rem;line-height:1.9;margin-bottom:.8rem}
+.flow-cards{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.flow-card{padding:.4rem .9rem;border-radius:3px;font-size:.75rem;font-family:'JetBrains Mono',monospace;border:1px solid;background:rgba(0,0,0,0.3)}
+.fc-cyan  {border-color:rgba(0,212,255,0.3);  color:var(--cyan)}
+.fc-green {border-color:rgba(0,255,157,0.3);  color:var(--green)}
+.fc-orange{border-color:rgba(255,107,53,0.3); color:var(--orange)}
+.fc-purple{border-color:rgba(180,111,255,0.3);color:var(--purple)}
+.fc-yellow{border-color:rgba(255,214,0,0.3);  color:var(--yellow)}
+.fc-red   {border-color:rgba(255,61,90,0.3);  color:var(--red)}
+/* SCENARIOS */
+.scenarios{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin:1rem 0 1.5rem}
+.scenario{border-radius:6px;border:1px solid;padding:1.2rem 1.4rem;background:rgba(0,0,0,0.25)}
+.sc-cyan  {border-color:rgba(0,212,255,0.25)}
+.sc-green {border-color:rgba(0,255,157,0.25)}
+.sc-orange{border-color:rgba(255,107,53,0.25)}
+.sc-purple{border-color:rgba(180,111,255,0.25)}
+.sc-yellow{border-color:rgba(255,214,0,0.25)}
+.sc-red   {border-color:rgba(255,61,90,0.25)}
+.scenario-head{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem}
+.scenario-label{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;padding:.2rem .6rem;border-radius:2px}
+.sl-cyan  {background:rgba(0,212,255,0.1); color:var(--cyan);  border:1px solid rgba(0,212,255,0.3)}
+.sl-green {background:rgba(0,255,157,0.08);color:var(--green); border:1px solid rgba(0,255,157,0.3)}
+.sl-orange{background:rgba(255,107,53,0.1);color:var(--orange);border:1px solid rgba(255,107,53,0.3)}
+.sl-purple{background:rgba(180,111,255,0.1);color:var(--purple);border:1px solid rgba(180,111,255,0.3)}
+.sl-yellow{background:rgba(255,214,0,0.08);color:var(--yellow);border:1px solid rgba(255,214,0,0.3)}
+.sl-red   {background:rgba(255,61,90,0.1); color:var(--red);   border:1px solid rgba(255,61,90,0.3)}
+.scenario-title{font-weight:600;font-size:.9rem;color:var(--white)}
+.scenario-body{font-size:.82rem;color:var(--text2);line-height:1.8;margin-top:.3rem}
+/* MINI FLOW */
+.mini-flow{display:flex;flex-direction:column;gap:4px;margin:.8rem 0}
+.mf-row{display:grid;grid-template-columns:24px 110px 1fr;gap:0;border-radius:4px;overflow:hidden;font-size:.78rem}
+.mf-num  {display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Orbitron',sans-serif;font-size:.65rem}
+.mf-actor{display:flex;align-items:center;padding:7px 10px;font-size:.75rem;font-weight:600;border-right:1px solid rgba(255,255,255,0.04)}
+.mf-desc {display:flex;align-items:center;padding:7px 12px;color:var(--text2);line-height:1.45}
+.mf-owner   .mf-num{background:rgba(0,212,255,0.5); color:var(--white)} .mf-owner   .mf-actor{background:rgba(0,212,255,0.08); color:var(--cyan)}  .mf-owner   .mf-desc{background:rgba(0,212,255,0.03)}
+.mf-system  .mf-num{background:rgba(122,155,181,0.4);color:var(--white)} .mf-system  .mf-actor{background:rgba(122,155,181,0.07);color:var(--text2)} .mf-system  .mf-desc{background:rgba(122,155,181,0.02)}
+.mf-invitee .mf-num{background:rgba(0,255,157,0.5); color:var(--white)} .mf-invitee .mf-actor{background:rgba(0,255,157,0.08); color:var(--green)} .mf-invitee .mf-desc{background:rgba(0,255,157,0.02)}
+.mf-docker  .mf-num{background:rgba(180,111,255,0.5);color:var(--white)} .mf-docker  .mf-actor{background:rgba(180,111,255,0.08);color:var(--purple)}.mf-docker  .mf-desc{background:rgba(180,111,255,0.02)}
+code.inline{font-family:'JetBrains Mono',monospace;font-size:.82em;background:rgba(0,0,0,0.35);border:1px solid var(--border2);padding:.1em .45em;border-radius:3px;color:var(--cyan)}
+code.orange{color:var(--orange)} code.green{color:var(--green)}
+/* ROLES TABLE */
+.roles-table{border-radius:6px;overflow:hidden;border:1px solid var(--border);margin:1.5rem 0}
+.rt-head{display:grid;grid-template-columns:140px 1fr 1fr 1fr;background:rgba(0,0,0,0.35);padding:10px 0}
+.rt-head-cell{padding:0 16px;font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.16em;color:var(--text3);text-transform:uppercase}
+.rt-row{display:grid;grid-template-columns:140px 1fr 1fr 1fr;border-top:1px solid rgba(255,255,255,0.04)}
+.rt-row:hover{background:rgba(0,212,255,0.025)}
+.rt-cell{padding:13px 16px;font-size:.82rem;color:var(--text2);line-height:1.5}
+.r-role{display:flex;align-items:center;gap:7px;font-weight:600}
+.ro-o{color:var(--yellow)} .ro-e{color:var(--cyan)} .ro-v{color:var(--text2)}
+.ck{color:var(--green);font-weight:700} .cx{color:var(--red);opacity:.5}
+/* USER CARDS */
+.users-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
+.user-card{padding:1.8rem;border:1px solid var(--border);background:var(--card);border-radius:6px;position:relative;overflow:hidden;transition:transform .2s}
+.user-card:hover{transform:translateY(-3px)}
+.user-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.uc-cyan::before  {background:var(--cyan);  box-shadow:0 0 15px var(--cyan)}
+.uc-green::before {background:var(--green); box-shadow:0 0 15px var(--green)}
+.uc-orange::before{background:var(--orange);box-shadow:0 0 15px var(--orange)}
+.user-icon {font-size:2.5rem;margin-bottom:1rem}
+.user-title{font-size:1.05rem;font-weight:700;color:var(--white);margin-bottom:.4rem}
+.user-desc {color:var(--text2);font-size:.83rem;line-height:1.75;margin-bottom:1rem}
+.user-perms{display:flex;flex-direction:column;gap:.3rem}
+.perm{font-size:.78rem;color:var(--text2);display:flex;align-items:flex-start;gap:.5rem;line-height:1.5}
+.perm-yes{color:var(--green);flex-shrink:0} .perm-no{color:var(--red);opacity:.6;flex-shrink:0}
+/* ERD */
+.erd-section{max-width:1400px;margin:0 auto;padding:5rem 2rem}
+.erd-group{margin-bottom:2.5rem}
+.erd-group-title{font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;padding:.4rem 1rem;border-radius:2px;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:1rem}
+.erd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem}
+.erd-table{background:var(--card);border:1px solid var(--border);border-radius:5px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.erd-table:hover{border-color:var(--border2);box-shadow:0 0 20px rgba(0,212,255,0.08)}
+.erd-table::before{content:'';display:block;height:3px}
+.et-cyan::before  {background:var(--cyan)}  .et-green::before {background:var(--green)}
+.et-orange::before{background:var(--orange)}.et-purple::before{background:var(--purple)}
+.et-yellow::before{background:var(--yellow)}
+.erd-thead{padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.2)}
+.erd-tname{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:.82rem;color:var(--white)}
+.erd-tlabel{font-family:'JetBrains Mono',monospace;font-size:.58rem;padding:.15rem .5rem;border-radius:2px;letter-spacing:.08em}
+.el-cyan  {background:rgba(0,212,255,0.1); color:var(--cyan);  border:1px solid rgba(0,212,255,0.25)}
+.el-green {background:rgba(0,255,157,0.08);color:var(--green); border:1px solid rgba(0,255,157,0.25)}
+.el-orange{background:rgba(255,107,53,0.1);color:var(--orange);border:1px solid rgba(255,107,53,0.25)}
+.el-purple{background:rgba(180,111,255,0.1);color:var(--purple);border:1px solid rgba(180,111,255,0.25)}
+.el-yellow{background:rgba(255,214,0,0.08);color:var(--yellow);border:1px solid rgba(255,214,0,0.25)}
+.erd-tbody{padding:.3rem 0}
+.erd-col{display:flex;align-items:center;padding:.22rem 1rem;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;border-bottom:1px solid rgba(20,45,71,0.5);transition:background .1s}
+.erd-col:last-child{border-bottom:none}
+.erd-col:hover{background:rgba(0,212,255,0.03)}
+.col-pk{color:var(--yellow);font-size:.6rem;width:14px;flex-shrink:0}
+.col-fk{color:var(--orange);font-size:.6rem;width:14px;flex-shrink:0}
+.col-xx{width:14px;flex-shrink:0}
+.col-name{flex:1;color:#a8d8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.col-name.is-pk{color:var(--yellow);font-weight:600}
+.col-name.is-fk{color:var(--orange)}
+.col-type{color:var(--text3);font-size:.6rem;flex-shrink:0}
+/* RELS */
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.2rem}
+.rel-card{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:1.2rem}
+.rel-card h4{font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.2em;color:var(--cyan);margin-bottom:.8rem;text-transform:uppercase}
+.rel-row{display:flex;align-items:center;gap:.5rem;padding:.25rem 0;border-bottom:1px solid rgba(20,45,71,0.4);font-family:'JetBrains Mono',monospace;font-size:.68rem}
+.rel-row:last-child{border:none}
+.rt-from{color:var(--white);font-weight:600;min-width:160px}
+.rt-arr{color:var(--orange)}
+.rt-to{color:#a8d8f0;flex:1}
+.rt-type{color:var(--text3);font-size:.6rem}
+/* SUMMARY */
+.summary-section{max-width:1000px;margin:0 auto;padding:5rem 2rem}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:2.5rem;position:relative;overflow:hidden}
+.summary-card::after{content:'';position:absolute;top:0;right:0;width:300px;height:300px;background:radial-gradient(circle,rgba(0,212,255,0.05) 0%,transparent 70%);pointer-events:none}
+.summary-title{font-family:'Orbitron',sans-serif;font-size:1.6rem;color:var(--cyan);margin-bottom:1rem}
+.summary-text{color:var(--text2);line-height:2;font-size:.92rem;margin-bottom:1.5rem}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:2rem}
+.summary-item{padding:1.2rem;border:1px solid var(--border);border-radius:4px;background:rgba(0,0,0,0.2)}
+.si-icon{font-size:1.5rem;margin-bottom:.5rem}
+.si-title{font-weight:600;color:var(--white);font-size:.88rem;margin-bottom:.3rem}
+.si-desc{color:var(--text2);font-size:.78rem;line-height:1.7}
+.tech-stack{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:2rem}
+.tech-pill{padding:.4rem .9rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.72rem;border:1px solid var(--border);color:var(--text2);background:rgba(0,0,0,0.3)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-badge">GRADUATION PROJECT — CYBERSECURITY SAAS PLATFORM</div>
+  <h1>CYBER<span>GUARD</span></h1>
+  <p class="hero-sub">A fully-integrated SaaS platform for Penetration Testing &amp; Security Assessment</p>
+  <p class="hero-desc">CyberGuard brings every tool a professional pentester needs into one collaborative workspace — from automated vulnerability scanning and evidence collection, to phishing simulation and one-click PDF reporting. Teams of any size can work together in real time with clearly defined roles, permissions, and audit trails.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-num">20</div><div class="hero-stat-label">Database Tables</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">12</div><div class="hero-stat-label">Scan Modules</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">3</div><div class="hero-stat-label">User Roles</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">SaaS</div><div class="hero-stat-label">Multi-Tenant</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">API</div><div class="hero-stat-label">-First Design</div></div>
+  </div>
+  <div class="scroll-hint">▼ &nbsp; scroll to explore</div>
+</div>
+
+<div class="sep-line"></div>
+
+<!-- S01: OVERVIEW -->
+<section>
+  <div class="section-tag tag-cyan">01 — Platform Overview</div>
+  <h2 class="section-title">What Problem Does CyberGuard Solve?</h2>
+  <p class="section-desc">Professional penetration testing today is fragmented. Pentesters juggle Burp Suite, Nmap, custom scripts, spreadsheets for findings, and email chains for client communication — all disconnected. CyberGuard replaces this with a single, structured, multi-user platform covering the entire security assessment lifecycle from project creation to final PDF delivery.</p>
+  <div class="scenarios">
+    <div class="scenario sc-cyan">
+      <div class="scenario-head"><div class="scenario-label sl-cyan">Problem 1</div><div class="scenario-title">Scattered Tooling</div></div>
+      <div class="scenario-body">Pentesters switch between multiple disconnected tools. Findings are written in Notepad, evidence lives in a screenshots folder, and reports are assembled manually in Word — taking hours per client.</div>
+    </div>
+    <div class="scenario sc-orange">
+      <div class="scenario-head"><div class="scenario-label sl-orange">Problem 2</div><div class="scenario-title">No Real Collaboration</div></div>
+      <div class="scenario-body">Multiple pentesters on the same engagement share findings via email or Slack. There is no single source of truth, no role enforcement, and no record of who changed what and when.</div>
+    </div>
+    <div class="scenario sc-purple">
+      <div class="scenario-head"><div class="scenario-label sl-purple">Problem 3</div><div class="scenario-title">Manual Reporting</div></div>
+      <div class="scenario-body">Every report is rebuilt from scratch. Copying CVSS scores, formatting findings, and writing executive summaries consumes time that should be spent on actual security work.</div>
+    </div>
+  </div>
+  <div class="callout co-good">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <div class="callout-title">CyberGuard's Solution</div>
+      One unified SaaS workspace: collaborative project management, automated scanning via isolated Docker containers, structured finding management with CVSS scoring, phishing simulation, and instant PDF report generation — all accessible to every team member according to their role.
+    </div>
+  </div>
+</section>
+
+<div class="sep-line"></div>
+
+<!-- S02: COMPLETE USER JOURNEY -->
+<section>
+  <div class="section-tag tag-cyan">02 — Complete User Journey</div>
+  <h2 class="section-title">From Registration to Delivered Report</h2>
+  <p class="section-desc">The following flow describes the full lifecycle of a penetration testing engagement on CyberGuard, covering every major decision point and all possible branches.</p>
+
+  <div class="flow-wrapper">
+
+    <!-- STEP 1 -->
+    <div class="flow-step">
+      <div class="flow-spine"><div class="flow-dot dot-cyan">01</div><div class="flow-line line-cyan"></div></div>
+      <div class="flow-content">
+        <div class="flow-step-title">Account Registration &amp; Subscription</div>
+        <div class="flow-step-desc">A new user registers with their email address and a secure password. The system sends a verification email — the account is inactive until confirmed. Upon first login, the user selects a subscription plan that enforces resource limits (max projects, targets, scans per month). Two-Factor Authentication (2FA via TOTP) is available and strongly recommended.</div>
+        <div class="scenarios">
+          <div class="scenario sc-cyan">
+            <div class="scenario-head"><div class="scenario-label sl-cyan">Path A</div><div class="scenario-title">Individual Freelancer</div></div>
+            <div class="scenario-body">Registers as a personal account. Works on personal projects with no organizational structure. Selects <strong style="color:var(--cyan)">Free</strong> or <strong style="color:var(--cyan)">Pro</strong> plan. Can invite collaborators directly to individual projects without creating an organization.</div>
+          </div>
+          <div class="scenario sc-green">
+            <div class="scenario-head"><div class="scenario-label sl-green">Path B</div><div class="scenario-title">Security Team Lead</div></div>
+            <div class="scenario-body">Registers personally, then creates an <strong style="color:var(--green)">Organization</strong>. Invites team members with roles (Admin / Member / Viewer). All organization members share a subscription quota. Projects can be owned by the org itself.</div>
+          </div>
+          <div class="scenario sc-orange">
+            <div class="scenario-head"><div class="scenario-label sl-orange">Path C</div><div class="scenario-title">Corporate Client</div></div>
+            <div class="scenario-body">Registers as Enterprise. Primarily uses the platform for internal security assessments and phishing awareness campaigns. May invite an external pentesting firm as an Editor on their projects.</div>
+          </div>
+        </div>
+        <div class="flow-cards">
+          <span class="flow-card fc-cyan">Free Plan</span><span class="flow-card fc-cyan">Pro Plan</span><span class="flow-card fc-cyan">Enterprise Plan</span><span class="flow-card fc-cyan">Email Verification</span><span class="flow-card fc-cyan">2FA (TOTP)</span><span class="flow-card fc-cyan">Personal Account</span><span class="flow-card fc-cyan">Organization Account</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="flow-step">
+      <div class="flow-spine"><div class="flow-dot dot-green">02</div><div class="flow-line line-green"></div></div>
+      <div class="flow-content">
+        <div class="flow-step-title">Project Creation &amp; Ownership Model</div>
+        <div class="flow-step-desc">The user creates a new Project and assigns it to an owner — either themselves (personal) or an Organization they belong to. The project holds a name, description, start/end dates, and a maximum collaborator limit enforced by their subscription tier. Projects support Soft Delete — archived projects are preserved in the database and can be restored.</div>
+        <div class="callout co-info">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-body">
+            <div class="callout-title">Polymorphic Ownership Design</div>
+            The <code class="inline">projects</code> table uses a polymorphic relationship via <code class="inline">owner_type</code> (<code class="inline">user</code> or <code class="inline">organization</code>) and <code class="inline">owner_id</code>. This allows a single project model to be owned by either entity without a separate table per type — a clean, extensible architecture.
+          </div>
+        </div>
+        <div class="scenarios">
+          <div class="scenario sc-cyan">
+            <div class="scenario-head"><div class="scenario-label sl-cyan">Personal Ownership</div></div>
+            <div class="scenario-body"><code class="inline">owner_type = "user"</code> — the creating user is both the owner and the first collaborator with role <code class="inline orange">owner</code>. Only this user can archive or delete the project, and only they can remove other collaborators.</div>
+          </div>
+          <div class="scenario sc-green">
+            <div class="scenario-head"><div class="scenario-label sl-green">Organization Ownership</div></div>
+            <div class="scenario-body"><code class="inline">owner_type = "organization"</code> — the project belongs to the org. Any org Admin can manage the project. The user who created it is tracked via <code class="inline">created_by</code> for audit purposes.</div>
+          </div>
+        </div>
+        <div class="flow-cards">
+          <span class="flow-card fc-green">Personal Project</span><span class="flow-card fc-green">Organization Project</span><span class="flow-card fc-green">Soft Delete (Archived)</span><span class="flow-card fc-green">Polymorphic Ownership</span><span class="flow-card fc-green">Subscription Quota Enforced</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="flow-step">
+      <div class="flow-spine"><div class="flow-dot dot-purple">03</div><div class="flow-line line-purple"></div></div>
+      <div class="flow-content">
+        <div class="flow-step-title">Team Collaboration &amp; Invite System</div>
+        <div class="flow-step-desc">The Project Owner invites additional pentesters as collaborators. Two invitation methods exist: a shareable link with an embedded token, or a direct email invite. Each invitation is stored in <code class="inline">project_invitations</code> with a unique token and a 7-day expiry. Once accepted, the user is added to <code class="inline">project_collaborators</code> and gains immediate access based on their assigned role.</div>
+        <div class="callout co-warn">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-body">
+            <div class="callout-title">Critical Business Rule — Owner Self-Removal Prevention</div>
+            The project Owner <strong>cannot remove themselves</strong> from a project. This prevents accidental orphaning. To transfer ownership, the Owner must first promote another member to Owner, then remove themselves. Role changes take effect immediately — no session restart required.
+          </div>
+        </div>
+        <p style="font-size:.85rem;color:var(--white);font-weight:600;margin:.8rem 0 .6rem">Invite Flow — Step by Step:</p>
+        <div class="mini-flow">
+          <div class="mf-row mf-owner">  <div class="mf-num">01</div><div class="mf-actor">👑 Owner</div>   <div class="mf-desc">Opens project → clicks <strong>Invite Member</strong> → selects role (Editor or Viewer) → chooses invite method (link or email)</div></div>
+          <div class="mf-row mf-system"> <div class="mf-num">02</div><div class="mf-actor">⚙️ System</div>  <div class="mf-desc">Generates a unique <code class="inline">token</code> → creates record in <code class="inline">project_invitations</code> with status <code class="inline orange">pending</code> and a 7-day expiry timestamp</div></div>
+          <div class="mf-row mf-owner">  <div class="mf-num">03</div><div class="mf-actor">👑 Owner</div>   <div class="mf-desc">Sends invite via Email (auto-dispatched) or copies the URL to share via WhatsApp, Slack, or any channel</div></div>
+          <div class="mf-row mf-invitee"><div class="mf-num">04</div><div class="mf-actor">👤 Invitee</div> <div class="mf-desc">Opens the link → sees project name, assigned role, and inviter's identity → clicks <strong>Accept Invitation</strong></div></div>
+          <div class="mf-row mf-system"> <div class="mf-num">05</div><div class="mf-actor">⚙️ System</div>  <div class="mf-desc">Validates token (not expired, not already used) → adds row to <code class="inline">project_collaborators</code> with <code class="inline">status = accepted</code> → marks invitation as <code class="inline orange">accepted</code></div></div>
+          <div class="mf-row mf-invitee"><div class="mf-num">06</div><div class="mf-actor">✏️ Member</div>  <div class="mf-desc">Gains immediate access to project targets, scans, and findings — all permissions enforced by their assigned role on every API call</div></div>
+        </div>
+        <div class="scenarios" style="margin-top:1.2rem">
+          <div class="scenario sc-red">
+            <div class="scenario-head"><div class="scenario-label sl-red">Edge Case: Token Expired</div></div>
+            <div class="scenario-body">If the invitee opens the link after 7 days, the system returns <code class="inline">422 Unprocessable Entity</code>. The Owner must generate a fresh invitation — expired tokens cannot be reused or extended.</div>
+          </div>
+          <div class="scenario sc-orange">
+            <div class="scenario-head"><div class="scenario-label sl-orange">Edge Case: Already a Member</div></div>
+            <div class="scenario-body">If the invitee is already a collaborator on the project, the system rejects the acceptance with an appropriate error rather than creating a duplicate record in <code class="inline">project_collaborators</code>.</div>
+          </div>
+          <div class="scenario sc-yellow">
+            <div class="scenario-head"><div class="scenario-label sl-yellow">Edge Case: Owner Removes Member</div></div>
+            <div class="scenario-body">The Owner can remove any Editor or Viewer at any time. The <code class="inline">project_collaborators</code> row is soft-deleted. The removed member immediately loses all API access — any active session is rejected on the next call.</div>
+          </div>
+        </div>
+        <div class="flow-cards">
+          <span class="flow-card fc-purple">Invite by Link</span><span class="flow-card fc-purple">Invite by Email</span><span class="flow-card fc-purple">7-Day Token Expiry</span><span class="flow-card fc-purple">Immediate Permission Grant</span><span class="flow-card fc-purple">Owner Cannot Self-Remove</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="flow-step">
+      <div class="flow-spine"><div class="flow-dot dot-orange">04</div><div class="flow-line line-orange"></div></div>
+      <div class="flow-content">
+        <div class="flow-step-title">Adding &amp; Verifying Targets</div>
+        <div class="flow-step-desc">Before scanning, the pentester defines one or more Targets inside the project. A target is the asset being tested — it can be a domain name, an IP address, or an IP network range. The system validates the format and optionally verifies domain ownership (DNS TXT record challenge) to prevent unauthorized testing against assets the client does not own. Each target maintains an independent <code class="inline">risk_score</code> recalculated after every completed scan.</div>
+        <div class="scenarios">
+          <div class="scenario sc-cyan">
+            <div class="scenario-head"><div class="scenario-label sl-cyan">Target Type: Domain</div></div>
+            <div class="scenario-body">e.g. <code class="inline">techcorp.com</code>. Supports all web-layer scan modules: SQLi, XSS, CSRF, open redirect, subdomain enumeration, SSL/TLS analysis, HTTP security header inspection, CORS misconfiguration.</div>
+          </div>
+          <div class="scenario sc-green">
+            <div class="scenario-head"><div class="scenario-label sl-green">Target Type: IP Address</div></div>
+            <div class="scenario-body">e.g. <code class="inline">192.168.1.10</code>. Supports network-layer modules: port scanning, service banner grabbing, WHOIS lookup, and service fingerprinting via Nmap-compatible tooling.</div>
+          </div>
+          <div class="scenario sc-purple">
+            <div class="scenario-head"><div class="scenario-label sl-purple">Target Type: Network Range</div></div>
+            <div class="scenario-body">e.g. <code class="inline">192.168.1.0/24</code>. Runs a host discovery sweep (ping sweep) followed by port and service enumeration across all live hosts discovered in the CIDR range.</div>
+          </div>
+        </div>
+        <div class="flow-cards">
+          <span class="flow-card fc-orange">Domain Target</span><span class="flow-card fc-orange">IP Target</span><span class="flow-card fc-orange">Network Range (CIDR)</span><span class="flow-card fc-orange">DNS Ownership Verification</span><span class="flow-card fc-orange">Risk Score per Target</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="flow-step">
+      <div class="flow-spine"><div class="flow-dot dot-purple">05</div><div class="flow-line line-purple"></div></div>
+      <div class="flow-content">
+        <div class="flow-step-title">Scan Execution — Auto &amp; Targeted</div>
+        <div class="flow-step-desc">The pentester launches a scan against a target. In <strong style="color:var(--cyan)">Auto Scan</strong> mode, all active modules run sequentially. In <strong style="color:var(--purple)">Targeted Scan</strong> mode, the user selects specific modules. Either way, a <code class="inline">scan_jobs</code> record is created with status <code class="inline orange">pending</code>, dispatched to the Laravel Queue via Redis. A worker picks up the job, spins up an isolated Docker container per module, executes the tool, parses output, and persists findings automatically.</div>
+        <div class="callout co-info">
+          <div class="callout-icon">🐳</div>
+          <div class="callout-body">
+            <div class="callout-title">Why Docker Containers?</div>
+            Each scan module runs inside its own Docker container. This provides complete process isolation (a crash in one module does not affect others), prevents resource exhaustion on the host, and allows different tool versions to coexist. Containers are destroyed immediately after the scan completes — no persistent state between runs.
+          </div>
+        </div>
+        <p style="font-size:.85rem;color:var(--white);font-weight:600;margin:.8rem 0 .6rem">Scan Lifecycle:</p>
+        <div class="mini-flow">
+          <div class="mf-row mf-owner">  <div class="mf-num">01</div><div class="mf-actor">👤 User</div>    <div class="mf-desc">Selects target → chooses Auto or Targeted scan → selects modules (if targeted) → clicks Launch → frontend sends <code class="inline">POST /api/scans</code></div></div>
+          <div class="mf-row mf-system"> <div class="mf-num">02</div><div class="mf-actor">⚙️ Laravel</div> <div class="mf-desc">Validates quota (scans remaining this month per subscription), creates <code class="inline">scan_jobs</code> record with <code class="inline orange">status = pending</code>, dispatches job to Redis queue</div></div>
+          <div class="mf-row mf-docker"> <div class="mf-num">03</div><div class="mf-actor">🐳 Worker</div>  <div class="mf-desc">Queue worker picks up job → updates <code class="inline orange">status = running</code> → spins up Docker container for each selected module in isolation</div></div>
+          <div class="mf-row mf-docker"> <div class="mf-num">04</div><div class="mf-actor">🐳 Module</div>  <div class="mf-desc">Tool executes against target, generates structured output → container exits, worker parses results, creates <code class="inline">findings</code> records with severity and full CVSS data</div></div>
+          <div class="mf-row mf-system"> <div class="mf-num">05</div><div class="mf-actor">⚙️ Laravel</div> <div class="mf-desc">Updates <code class="inline orange">status = completed</code> (or <code class="inline orange">failed</code> on error) → recalculates <code class="inline">targets.risk_score</code> → broadcasts real-time event via WebSocket to all project members</div></div>
+          <div class="mf-row mf-invitee"><div class="mf-num">06</div><div class="mf-actor">📊 Frontend</div><div class="mf-desc">Receives WebSocket event → updates scan progress bar live → new findings appear in the list without page reload — visible to all connected collaborators simultaneously</div></div>
+        </div>
+        <div class="scenarios" style="margin-top:1.2rem">
+          <div class="scenario sc-red">
+            <div class="scenario-head"><div class="scenario-label sl-red">Failure Scenario</div></div>
+            <div class="scenario-body">If the Docker container exits with a non-zero code (target unreachable, tool crash, timeout), the job is marked <code class="inline orange">failed</code>. The specific error is persisted in <code class="inline">scan_jobs.error_message</code>. The user sees the error in the UI and can retry.</div>
+          </div>
+          <div class="scenario sc-yellow">
+            <div class="scenario-head"><div class="scenario-label sl-yellow">Quota Exceeded</div></div>
+            <div class="scenario-body">If the user has consumed all their monthly scans (enforced via <code class="inline">user_subscriptions.max_scans_per_month</code>), the API returns <code class="inline">403 Forbidden</code> with a plan upgrade prompt. The scan is not queued.</div>
+          </div>
+        </div>
+        <div class="flow-cards">
+          <span class="flow-card fc-purple">sqli</span><span class="flow-card fc-purple">xss</span><span class="flow-card fc-purple">csrf</span><span class="flow-card fc-purple">port-scan</span><span class="flow-card fc-purple">ssl-check</span><span class="flow-card fc-purple">subdomain-enum</span><span class="flow-card fc-purple">banner-grab</span><span class="flow-card fc-purple">whois</span><span class="flow-card fc-purple">cors-check</span><span class="flow-card fc-purple">http-headers</span><span class="flow-card fc-purple">dir-bruteforce</span><span class="flow-card fc-purple">cve-lookup</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="flow-step">
+      <div class="flow-spine"><div class="flow-dot dot-yellow">06</div><div class="flow-line line-yellow"></div></div>
+      <div class="flow-content">
+        <div class="flow-step-title">Finding Management &amp; Evidence Collection</div>
+        <div class="flow-step-desc">Every vulnerability discovered by a scan (or manually added by a pentester) is stored as a <code class="inline">finding</code> record. Findings are classified by severity (Critical → Info) and assigned a full CVSS v3 score and vector string. Where applicable, a CVE identifier is linked for reference. Each finding tracks its remediation status through a defined lifecycle, and supports multiple evidence attachments.</div>
+        <div class="scenarios">
+          <div class="scenario sc-red">
+            <div class="scenario-head"><div class="scenario-label sl-red">Status: open</div></div>
+            <div class="scenario-body">Newly discovered, no remediation action taken. Contributes fully to the target's risk score calculation. Visible to all collaborators with at least Viewer access.</div>
+          </div>
+          <div class="scenario sc-yellow">
+            <div class="scenario-head"><div class="scenario-label sl-yellow">Status: in_progress</div></div>
+            <div class="scenario-body">The development or operations team has acknowledged the finding and is actively working on a fix. Partially discounted from risk score to reflect ongoing remediation effort.</div>
+          </div>
+          <div class="scenario sc-green">
+            <div class="scenario-head"><div class="scenario-label sl-green">Status: resolved</div></div>
+            <div class="scenario-body">A fix has been deployed and the pentester has re-tested and confirmed remediation. No longer counts toward risk score. Historical record is permanently preserved for audit trail.</div>
+          </div>
+          <div class="scenario sc-orange">
+            <div class="scenario-head"><div class="scenario-label sl-orange">Status: accepted_risk</div></div>
+            <div class="scenario-body">The client has formally acknowledged the vulnerability and accepted the risk without fixing it (e.g. legacy system, cost/benefit decision). Documented with a written rationale — excluded from risk score but visible in reports.</div>
+          </div>
+        </div>
+        <div class="callout co-info">
+          <div class="callout-icon">📸</div>
+          <div class="callout-body">
+            <div class="callout-title">Evidence Attachments</div>
+            Each finding supports multiple evidence files stored in <code class="inline">finding_evidences</code>. These include screenshots (auto-captured via Puppeteer/Browsershot), raw HTTP request/response pairs captured during the scan, tool output logs, and any file manually uploaded by a team member. All files are stored in Amazon S3 or MinIO (for self-hosted deployments).
+          </div>
+        </div>
+        <div class="flow-cards">
+          <span class="flow-card fc-red">Critical</span><span class="flow-card fc-yellow">High</span><span class="flow-card fc-yellow">Medium</span><span class="flow-card fc-green">Low</span><span class="flow-card fc-cyan">Info</span><span class="flow-card fc-orange">CVSS v3 Score &amp; Vector</span><span class="flow-card fc-orange">CVE ID Linkage</span><span class="flow-card fc-orange">Screenshots (Puppeteer)</span><span class="flow-card fc-orange">HTTP Request/Response</span><span class="flow-card fc-orange">S3 / MinIO Storage</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 7 -->
+    <div class="flow-step">
+      <div class="flow-spine"><div class="flow-dot dot-cyan">07</div><div class="flow-line line-cyan"></div></div>
+      <div class="flow-content">
+        <div class="flow-step-title">Phishing Simulation (Optional Module)</div>
+        <div class="flow-step-desc">When the scope includes human-layer testing, the pentester runs a phishing simulation campaign against the client's employees. This module tests security awareness by sending simulated phishing emails and tracking interaction at the individual level using unique per-employee tokens for granular attribution.</div>
+        <p style="font-size:.85rem;color:var(--white);font-weight:600;margin:.8rem 0 .6rem">Campaign Lifecycle:</p>
+        <div class="mini-flow">
+          <div class="mf-row mf-owner">  <div class="mf-num">01</div><div class="mf-actor">✏️ Pentester</div><div class="mf-desc">Creates campaign: writes email subject, body, sender name; sets phishing URL (must be a pre-verified domain within the engagement scope)</div></div>
+          <div class="mf-row mf-owner">  <div class="mf-num">02</div><div class="mf-actor">✏️ Pentester</div><div class="mf-desc">Uploads employee CSV (name, email, department) → system creates one <code class="inline">phishing_targets</code> record per employee, each with a unique, non-guessable tracking token</div></div>
+          <div class="mf-row mf-system"> <div class="mf-num">03</div><div class="mf-actor">⚙️ System</div>  <div class="mf-desc">Campaign marked <code class="inline orange">running</code> → queued email jobs dispatched via Laravel Mail at controlled intervals to avoid triggering spam filters</div></div>
+          <div class="mf-row mf-docker"> <div class="mf-num">04</div><div class="mf-actor">📧 Tracking</div><div class="mf-desc">Each email contains a 1×1 pixel linked to <code class="inline">GET /track/{token}/open</code> — when loaded by the email client, records an <code class="inline">opened</code> event in <code class="inline">phishing_events</code></div></div>
+          <div class="mf-row mf-invitee"><div class="mf-num">05</div><div class="mf-actor">👤 Employee</div><div class="mf-desc">If employee clicks the phishing link → <code class="inline">clicked</code> event recorded with timestamp and IP. If they complete the fake form → <code class="inline">submitted</code> event recorded — credentials never stored</div></div>
+          <div class="mf-row mf-system"> <div class="mf-num">06</div><div class="mf-actor">📊 Analysis</div><div class="mf-desc">Awareness score (0–100) calculated per employee based on all events. Department-level aggregation identifies high-risk teams. Summary visible in real-time dashboard.</div></div>
+        </div>
+        <div class="scenarios" style="margin-top:1.2rem">
+          <div class="scenario sc-green">
+            <div class="scenario-head"><div class="scenario-label sl-green">Best Case</div></div>
+            <div class="scenario-body">Employee does not open the email, or opens it but does not click the link. Score: 80–100. Recommended action: positive reinforcement, basic awareness refresher.</div>
+          </div>
+          <div class="scenario sc-yellow">
+            <div class="scenario-head"><div class="scenario-label sl-yellow">Medium Risk</div></div>
+            <div class="scenario-body">Employee opened and clicked the link but did not submit credentials. Score: 40–60. Recommended: targeted phishing awareness training session.</div>
+          </div>
+          <div class="scenario sc-red">
+            <div class="scenario-head"><div class="scenario-label sl-red">High Risk</div></div>
+            <div class="scenario-body">Employee opened, clicked, and submitted credentials into the fake form. Score: 0–20. Recommended: mandatory security training, account security review, immediate MFA enforcement.</div>
+          </div>
+        </div>
+        <div class="flow-cards">
+          <span class="flow-card fc-cyan">Email Simulation</span><span class="flow-card fc-cyan">Pixel Open Tracking</span><span class="flow-card fc-cyan">Link Click Tracking</span><span class="flow-card fc-cyan">Credential Submission Event</span><span class="flow-card fc-cyan">Awareness Score (0–100)</span><span class="flow-card fc-cyan">Department-Level Analysis</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 8 -->
+    <div class="flow-step">
+      <div class="flow-spine"><div class="flow-dot dot-green">08</div><div class="flow-line" style="background:transparent"></div></div>
+      <div class="flow-content">
+        <div class="flow-step-title">PDF Report Generation &amp; Delivery</div>
+        <div class="flow-step-desc">When the engagement is complete, the pentester generates a professional PDF report with a single action. The report is compiled by DomPDF from a server-rendered Blade template that aggregates all project data — findings, CVSS scores, evidence, risk scores, and phishing results. The generated file is stored in S3 and linked as a <code class="inline">project_reports</code> record for permanent access.</div>
+        <div class="callout co-good">
+          <div class="callout-icon">📄</div>
+          <div class="callout-body">
+            <div class="callout-title">Report Contents</div>
+            Executive summary · Project scope and methodology · All findings grouped by severity · CVSS v3 score and vector per finding · Remediation recommendations per finding · Evidence screenshots inline · Historical risk score trend chart · Phishing awareness results (if applicable) · Generated timestamp and pentester attribution
+          </div>
+        </div>
+        <div class="scenarios">
+          <div class="scenario sc-cyan">
+            <div class="scenario-head"><div class="scenario-label sl-cyan">Per-Project Report</div></div>
+            <div class="scenario-body">Covers all targets and findings within a single project. Suitable for the final client deliverable after a complete engagement. Includes cross-target risk comparison.</div>
+          </div>
+          <div class="scenario sc-purple">
+            <div class="scenario-head"><div class="scenario-label sl-purple">Per-Target Report</div></div>
+            <div class="scenario-body">Scoped to a single target. Useful for partial deliverables, milestone reviews, or when different assets belong to different stakeholders within the same organization.</div>
+          </div>
+        </div>
+        <div class="flow-cards">
+          <span class="flow-card fc-green">One-Click PDF Generation</span><span class="flow-card fc-green">DomPDF / LaravelPDF</span><span class="flow-card fc-green">Risk Score History</span><span class="flow-card fc-green">Executive Summary</span><span class="flow-card fc-green">Remediation Plan</span><span class="flow-card fc-green">Inline Evidence</span><span class="flow-card fc-green">Stored in S3</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="sep-line"></div>
+
+<!-- S03: ROLES -->
+<section>
+  <div class="section-tag tag-purple">03 — Access Control</div>
+  <h2 class="section-title">Role-Based Permission System</h2>
+  <p class="section-desc">CyberGuard enforces a three-tier role system at the project level. Permissions are checked server-side on every API endpoint via Laravel Policy classes — the frontend reflects the same state, but the backend is the single source of truth. Roles are stored in <code class="inline">project_collaborators.role</code>.</p>
+
+  <div class="roles-table">
+    <div class="rt-head">
+      <div class="rt-head-cell">Role</div>
+      <div class="rt-head-cell">Project &amp; Targets</div>
+      <div class="rt-head-cell">Scans &amp; Findings</div>
+      <div class="rt-head-cell">Members &amp; Reports</div>
+    </div>
+    <div class="rt-row">
+      <div class="rt-cell"><div class="r-role ro-o">👑 Owner</div></div>
+      <div class="rt-cell">Create, edit, archive, delete. Manage all project settings and targets. Transfer ownership.</div>
+      <div class="rt-cell">Launch any scan type. Create, update, and delete findings. Upload and delete evidence.</div>
+      <div class="rt-cell"><span class="ck">✓</span> Invite, remove, change roles of any member. Generate and delete PDF reports.</div>
+    </div>
+    <div class="rt-row">
+      <div class="rt-cell"><div class="r-role ro-e">✏️ Editor</div></div>
+      <div class="rt-cell">Edit project details and add/remove targets. Cannot archive or delete the project itself.</div>
+      <div class="rt-cell">Launch scans. Create and update findings and their status. Upload evidence screenshots.</div>
+      <div class="rt-cell"><span class="cx">✗</span> Cannot invite or remove members. Can generate but not delete PDF reports.</div>
+    </div>
+    <div class="rt-row">
+      <div class="rt-cell"><div class="r-role ro-v">👁 Viewer</div></div>
+      <div class="rt-cell">Read-only. Cannot modify project, targets, or any settings whatsoever.</div>
+      <div class="rt-cell">Can view findings and evidence. Cannot launch scans or modify finding status.</div>
+      <div class="rt-cell"><span class="cx">✗</span> No management access. Can download (not generate) existing reports.</div>
+    </div>
+  </div>
+
+  <div class="callout co-warn">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <div class="callout-title">Owner Self-Removal Prevention</div>
+      The system explicitly checks whether the user attempting a leave or remove action is the sole Owner. If so, the request is rejected with <code class="inline">403 Forbidden</code>. To leave a project they own, the Owner must first promote another collaborator to Owner, then remove themselves. This rule is enforced at the policy level — it cannot be bypassed via the API.
+    </div>
+  </div>
+</section>
+
+<div class="sep-line"></div>
+
+<!-- S04: USER TYPES -->
+<section>
+  <div class="section-tag tag-green">04 — Target Users</div>
+  <h2 class="section-title">Who Uses CyberGuard?</h2>
+  <p class="section-desc">The platform is designed to accommodate three distinct user personas, each with different workflows and requirements.</p>
+  <div class="users-grid">
+    <div class="user-card uc-cyan">
+      <div class="user-icon">👤</div>
+      <div class="user-title">Freelance Pentester</div>
+      <div class="user-desc">Works independently on multiple client engagements. Manages each client as a separate personal project. Can invite other freelancers as collaborators on specific projects without creating an organization. Generates branded PDF reports to deliver to clients.</div>
+      <div class="user-perms">
+        <div class="perm"><span class="perm-yes">✓</span> Personal project ownership</div>
+        <div class="perm"><span class="perm-yes">✓</span> Per-project collaborator invites</div>
+        <div class="perm"><span class="perm-yes">✓</span> Full scan and finding management</div>
+        <div class="perm"><span class="perm-yes">✓</span> Professional client-ready PDF reports</div>
+        <div class="perm"><span class="perm-no">✗</span> No organizational structure required</div>
+      </div>
+    </div>
+    <div class="user-card uc-green">
+      <div class="user-icon">👥</div>
+      <div class="user-title">Security Team</div>
+      <div class="user-desc">A group of pentesters under a shared Organization. Projects are owned by the org entity, allowing multiple Admins to manage them. Members are assigned org-level roles and receive additional project-level roles for specific engagements. Shared audit logs across all projects.</div>
+      <div class="user-perms">
+        <div class="perm"><span class="perm-yes">✓</span> Shared Organization with centralized billing</div>
+        <div class="perm"><span class="perm-yes">✓</span> Organization-owned projects</div>
+        <div class="perm"><span class="perm-yes">✓</span> Multi-level roles (Org + Project)</div>
+        <div class="perm"><span class="perm-yes">✓</span> Shared audit logs across all projects</div>
+        <div class="perm"><span class="perm-yes">✓</span> Cross-team collaboration via invite links</div>
+      </div>
+    </div>
+    <div class="user-card uc-orange">
+      <div class="user-icon">🏢</div>
+      <div class="user-title">Corporate Client</div>
+      <div class="user-desc">An enterprise organization continuously assessing its own security posture. Uses phishing simulation to test employee awareness, runs internal network scans, and may invite an external pentesting firm as Editors. Receives deliverables through the Viewer role.</div>
+      <div class="user-perms">
+        <div class="perm"><span class="perm-yes">✓</span> Internal infrastructure scanning</div>
+        <div class="perm"><span class="perm-yes">✓</span> Phishing simulation for all employees</div>
+        <div class="perm"><span class="perm-yes">✓</span> Department-level awareness reports</div>
+        <div class="perm"><span class="perm-yes">✓</span> Invite external pentesters as Editors</div>
+        <div class="perm"><span class="perm-yes">✓</span> Viewer access to findings and reports</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sep-line"></div>
+
+<!-- S05: ERD -->
+<div class="erd-section">
+  <div style="text-align:center;margin-bottom:3rem">
+    <div class="section-tag tag-purple" style="display:inline-block">05 — Data Architecture</div>
+    <h2 class="section-title" style="text-align:center">Entity Relationship Diagram</h2>
+    <p class="section-desc" style="text-align:center;margin:0 auto;max-width:700px">20 tables organized across 5 functional groups. All primary keys are UUIDs to prevent enumeration attacks. All main entities support Soft Delete to preserve data integrity and audit history.</p>
+  </div>
+
+  <div class="erd-group">
+    <div class="erd-group-title tag-cyan">◈ Group 1 — Core · Auth · Multi-Tenant</div>
+    <div class="erd-grid">
+      <div class="erd-table et-cyan"><div class="erd-thead"><span class="erd-tname">users</span><span class="erd-tlabel el-cyan">CORE</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">email</span><span class="col-type">VARCHAR UNIQUE</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">password</span><span class="col-type">VARCHAR (bcrypt)</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">full_name</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">avatar_url</span><span class="col-type">TEXT nullable</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">email_verified_at</span><span class="col-type">TIMESTAMP</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">two_factor_secret</span><span class="col-type">VARCHAR nullable</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">last_login_at</span><span class="col-type">TIMESTAMP</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">created_at / deleted_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+      <div class="erd-table et-cyan"><div class="erd-thead"><span class="erd-tname">user_subscriptions</span><span class="erd-tlabel el-cyan">CORE</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">user_id</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">plan</span><span class="col-type">ENUM free/pro/enterprise</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">status</span><span class="col-type">ENUM active/expired</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">max_projects</span><span class="col-type">INT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">max_targets</span><span class="col-type">INT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">max_scans_per_month</span><span class="col-type">INT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">expires_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+      <div class="erd-table et-cyan"><div class="erd-thead"><span class="erd-tname">organizations</span><span class="erd-tlabel el-cyan">CORE</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">owner_id</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">name</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">slug</span><span class="col-type">VARCHAR UNIQUE</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">domain</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">logo_url</span><span class="col-type">TEXT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">created_at / deleted_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+      <div class="erd-table et-cyan"><div class="erd-thead"><span class="erd-tname">organization_subscriptions</span><span class="erd-tlabel el-cyan">CORE</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">organization_id</span><span class="col-type">FK → organizations</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">plan</span><span class="col-type">ENUM pro/enterprise</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">status</span><span class="col-type">ENUM active/expired</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">max_projects / targets</span><span class="col-type">INT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">max_members</span><span class="col-type">INT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">expires_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+      <div class="erd-table et-cyan"><div class="erd-thead"><span class="erd-tname">organization_members</span><span class="erd-tlabel el-cyan">PIVOT</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">organization_id</span><span class="col-type">FK → organizations</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">user_id</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">role</span><span class="col-type">ENUM owner/admin/member/viewer</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">joined_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="erd-group">
+    <div class="erd-group-title tag-yellow">◈ Group 2 — Projects &amp; Collaboration</div>
+    <div class="erd-grid">
+      <div class="erd-table et-yellow"><div class="erd-thead"><span class="erd-tname">projects</span><span class="erd-tlabel el-yellow">PROJECT</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">owner_type</span><span class="col-type">"user" | "organization"</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">owner_id</span><span class="col-type">UUID (polymorphic)</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">created_by</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">name / description</span><span class="col-type">VARCHAR / TEXT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">status</span><span class="col-type">ENUM active/archived</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">max_collaborators</span><span class="col-type">INT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">start_date / end_date</span><span class="col-type">DATE</span></div></div></div>
+      <div class="erd-table et-yellow"><div class="erd-thead"><span class="erd-tname">project_collaborators</span><span class="erd-tlabel el-yellow">COLLAB</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">project_id</span><span class="col-type">FK → projects</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">user_id</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">invited_by</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">role</span><span class="col-type">ENUM owner/editor/viewer</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">status</span><span class="col-type">ENUM pending/accepted/rejected</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">invited_at / accepted_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+      <div class="erd-table et-yellow"><div class="erd-thead"><span class="erd-tname">project_invitations</span><span class="erd-tlabel el-yellow">COLLAB</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">project_id</span><span class="col-type">FK → projects</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">invited_by</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">email</span><span class="col-type">VARCHAR nullable</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">token</span><span class="col-type">VARCHAR UNIQUE</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">role</span><span class="col-type">ENUM editor/viewer</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">status</span><span class="col-type">ENUM pending/accepted/expired</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">expires_at</span><span class="col-type">TIMESTAMP (+7 days)</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="erd-group">
+    <div class="erd-group-title tag-green">◈ Group 3 — Scan System</div>
+    <div class="erd-grid">
+      <div class="erd-table et-green"><div class="erd-thead"><span class="erd-tname">targets</span><span class="erd-tlabel el-green">SCAN</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">project_id</span><span class="col-type">FK → projects</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">type</span><span class="col-type">ENUM domain/ip/network</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">value</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">is_verified</span><span class="col-type">BOOLEAN</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">risk_score</span><span class="col-type">DECIMAL (0–10)</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">last_scanned_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+      <div class="erd-table et-green"><div class="erd-thead"><span class="erd-tname">scan_modules</span><span class="erd-tlabel el-green">SCAN</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">name / slug</span><span class="col-type">VARCHAR UNIQUE</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">category</span><span class="col-type">ENUM web/network/recon</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">docker_image</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">is_active</span><span class="col-type">BOOLEAN</span></div></div></div>
+      <div class="erd-table et-green"><div class="erd-thead"><span class="erd-tname">scan_jobs</span><span class="erd-tlabel el-green">SCAN</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">target_id</span><span class="col-type">FK → targets</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">initiated_by</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">type</span><span class="col-type">ENUM auto/targeted</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">status</span><span class="col-type">ENUM pending/running/completed/failed</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">started_at / finished_at</span><span class="col-type">TIMESTAMP</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">error_message</span><span class="col-type">TEXT nullable</span></div></div></div>
+      <div class="erd-table et-green"><div class="erd-thead"><span class="erd-tname">findings</span><span class="erd-tlabel el-green">SCAN</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">scan_job_id</span><span class="col-type">FK → scan_jobs</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">target_id</span><span class="col-type">FK → targets</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">title / description</span><span class="col-type">VARCHAR / TEXT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">severity</span><span class="col-type">ENUM critical/high/medium/low/info</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">cvss_score / vector</span><span class="col-type">DECIMAL / VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">cve_id</span><span class="col-type">VARCHAR nullable</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">status</span><span class="col-type">ENUM open/in_progress/resolved/accepted_risk</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">remediation</span><span class="col-type">TEXT</span></div></div></div>
+      <div class="erd-table et-green"><div class="erd-thead"><span class="erd-tname">finding_evidences</span><span class="erd-tlabel el-green">SCAN</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">finding_id</span><span class="col-type">FK → findings</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">type</span><span class="col-type">ENUM screenshot/request/log/file</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">file_path</span><span class="col-type">TEXT (S3 key)</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">captured_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="erd-group">
+    <div class="erd-group-title tag-orange">◈ Group 4 — Phishing Module</div>
+    <div class="erd-grid">
+      <div class="erd-table et-orange"><div class="erd-thead"><span class="erd-tname">phishing_campaigns</span><span class="erd-tlabel el-orange">PHISHING</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">project_id</span><span class="col-type">FK → projects</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">created_by</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">name / subject / body</span><span class="col-type">VARCHAR / TEXT</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">sender_name / email</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">phishing_url</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">status</span><span class="col-type">ENUM draft/running/completed</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">sent_at / finished_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+      <div class="erd-table et-orange"><div class="erd-thead"><span class="erd-tname">phishing_targets</span><span class="erd-tlabel el-orange">PHISHING</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">campaign_id</span><span class="col-type">FK → phishing_campaigns</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">full_name / email</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">department</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">token</span><span class="col-type">VARCHAR UNIQUE</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">awareness_score</span><span class="col-type">DECIMAL (0–100)</span></div></div></div>
+      <div class="erd-table et-orange"><div class="erd-thead"><span class="erd-tname">phishing_events</span><span class="erd-tlabel el-orange">PHISHING</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">phishing_target_id</span><span class="col-type">FK → phishing_targets</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">event_type</span><span class="col-type">ENUM sent/opened/clicked/submitted</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">ip_address</span><span class="col-type">VARCHAR nullable</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">user_agent</span><span class="col-type">TEXT nullable</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">occurred_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="erd-group">
+    <div class="erd-group-title tag-purple">◈ Group 5 — Audit Logs &amp; Reports</div>
+    <div class="erd-grid">
+      <div class="erd-table et-purple"><div class="erd-thead"><span class="erd-tname">audit_logs</span><span class="erd-tlabel el-purple">AUDIT</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">user_id</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">action</span><span class="col-type">VARCHAR (e.g. finding.create)</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">auditable_type</span><span class="col-type">VARCHAR (model name)</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">auditable_id</span><span class="col-type">UUID (polymorphic)</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">old_values / new_values</span><span class="col-type">JSON</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">ip_address</span><span class="col-type">VARCHAR</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">created_at</span><span class="col-type">TIMESTAMP (no soft delete)</span></div></div></div>
+      <div class="erd-table et-purple"><div class="erd-thead"><span class="erd-tname">project_reports</span><span class="erd-tlabel el-purple">REPORT</span></div><div class="erd-tbody"><div class="erd-col"><span class="col-pk">🔑</span><span class="col-name is-pk">id</span><span class="col-type">UUID PK</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">project_id</span><span class="col-type">FK → projects</span></div><div class="erd-col"><span class="col-fk">⇢</span><span class="col-name is-fk">generated_by</span><span class="col-type">FK → users</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">file_path</span><span class="col-type">TEXT (S3 key)</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">risk_score_snapshot</span><span class="col-type">DECIMAL</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">findings_count</span><span class="col-type">JSON (by severity)</span></div><div class="erd-col"><span class="col-xx"></span><span class="col-name">generated_at</span><span class="col-type">TIMESTAMP</span></div></div></div>
+    </div>
+  </div>
+
+  <div style="margin-top:3rem">
+    <div class="section-tag tag-cyan" style="margin-bottom:1.5rem">Database Relationships Summary</div>
+    <div class="rel-grid">
+      <div class="rel-card"><h4>🔵 Core Relations</h4><div class="rel-row"><span class="rt-from">users</span><span class="rt-arr">──1:1──▶</span><span class="rt-to">user_subscriptions</span><span class="rt-type">1:1</span></div><div class="rel-row"><span class="rt-from">users</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">organizations (owner)</span><span class="rt-type">1:N</span></div><div class="rel-row"><span class="rt-from">organizations</span><span class="rt-arr">──M:N──▶</span><span class="rt-to">users</span><span class="rt-type">via org_members</span></div><div class="rel-row"><span class="rt-from">organizations</span><span class="rt-arr">──1:1──▶</span><span class="rt-to">org_subscriptions</span><span class="rt-type">1:1</span></div></div>
+      <div class="rel-card"><h4>🟡 Project Relations</h4><div class="rel-row"><span class="rt-from">users / orgs</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">projects</span><span class="rt-type">polymorphic owner</span></div><div class="rel-row"><span class="rt-from">projects</span><span class="rt-arr">──M:N──▶</span><span class="rt-to">users</span><span class="rt-type">via collaborators</span></div><div class="rel-row"><span class="rt-from">projects</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">project_invitations</span><span class="rt-type">1:N</span></div></div>
+      <div class="rel-card"><h4>🟢 Scan Relations</h4><div class="rel-row"><span class="rt-from">projects</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">targets</span><span class="rt-type">1:N</span></div><div class="rel-row"><span class="rt-from">targets</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">scan_jobs</span><span class="rt-type">1:N</span></div><div class="rel-row"><span class="rt-from">scan_jobs</span><span class="rt-arr">──M:N──▶</span><span class="rt-to">scan_modules</span><span class="rt-type">via pivot</span></div><div class="rel-row"><span class="rt-from">scan_jobs</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">findings</span><span class="rt-type">1:N</span></div><div class="rel-row"><span class="rt-from">findings</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">finding_evidences</span><span class="rt-type">1:N</span></div></div>
+      <div class="rel-card"><h4>🟠 Phishing Relations</h4><div class="rel-row"><span class="rt-from">projects</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">phishing_campaigns</span><span class="rt-type">1:N</span></div><div class="rel-row"><span class="rt-from">campaigns</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">phishing_targets</span><span class="rt-type">1:N</span></div><div class="rel-row"><span class="rt-from">phishing_targets</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">phishing_events</span><span class="rt-type">1:N</span></div></div>
+      <div class="rel-card"><h4>🟣 Audit Relations</h4><div class="rel-row"><span class="rt-from">users</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">audit_logs</span><span class="rt-type">polymorphic target</span></div><div class="rel-row"><span class="rt-from">projects</span><span class="rt-arr">──1:N──▶</span><span class="rt-to">project_reports</span><span class="rt-type">1:N</span></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="sep-line"></div>
+
+<!-- S06: SUMMARY -->
+<div class="summary-section">
+  <div class="section-tag tag-orange">06 — Project Summary</div>
+  <h2 class="section-title">CyberGuard at a Glance</h2>
+  <div class="summary-card">
+    <div class="summary-title">What is CyberGuard?</div>
+    <div class="summary-text">CyberGuard is a multi-tenant SaaS platform purpose-built for professional penetration testing and security assessment. It consolidates every stage of a security engagement — from project creation and team collaboration through automated vulnerability scanning, structured finding management, phishing simulation, and professional report delivery — into a single, cohesive product. Whether used by a solo freelancer, a corporate security team, or an enterprise client running internal assessments, CyberGuard scales to the workflow without friction.</div>
+    <div class="summary-grid">
+      <div class="summary-item"><div class="si-icon">🎯</div><div class="si-title">Project &amp; Target Management</div><div class="si-desc">Flexible polymorphic ownership — projects belong to a user or an organization. Targets support domain, IP, and CIDR range types. All quotas enforced by subscription plan.</div></div>
+      <div class="summary-item"><div class="si-icon">🔍</div><div class="si-title">Automated Scanning</div><div class="si-desc">12 modules dispatched via Laravel Queue to isolated Docker containers. Auto Scan runs all modules; Targeted Scan lets the user select. Real-time WebSocket progress updates.</div></div>
+      <div class="summary-item"><div class="si-icon">🐛</div><div class="si-title">Finding Management</div><div class="si-desc">Full CVSS v3 scoring, CVE linking, 4-state status lifecycle, multi-file S3 evidence attachments, and per-finding remediation guidance.</div></div>
+      <div class="summary-item"><div class="si-icon">👥</div><div class="si-title">Team Collaboration</div><div class="si-desc">Owner/Editor/Viewer RBAC enforced server-side via Laravel Policies. Invite by link or email with 7-day token expiry. Full audit trail on every action.</div></div>
+      <div class="summary-item"><div class="si-icon">🎣</div><div class="si-title">Phishing Simulation</div><div class="si-desc">End-to-end campaign management with per-employee event tracking (sent → opened → clicked → submitted) and department-level awareness scoring.</div></div>
+      <div class="summary-item"><div class="si-icon">📊</div><div class="si-title">Reports &amp; Risk Score</div><div class="si-desc">One-click DomPDF generation with executive summary, all findings, CVSS data, inline evidence, and historical risk score trend — stored permanently in S3.</div></div>
+    </div>
+    <div style="margin-top:2rem">
+      <div class="section-tag tag-cyan" style="margin-bottom:.8rem">Tech Stack</div>
+      <div class="tech-stack">
+        <span class="tech-pill">Laravel 12 (PHP 8.3)</span><span class="tech-pill">MySQL 8+</span><span class="tech-pill">Redis + Laravel Queues</span><span class="tech-pill">Docker Containers</span><span class="tech-pill">Laravel Sanctum</span><span class="tech-pill">2FA (TOTP)</span><span class="tech-pill">Amazon S3 / MinIO</span><span class="tech-pill">Puppeteer / Browsershot</span><span class="tech-pill">DomPDF / LaravelPDF</span><span class="tech-pill">UUID Primary Keys</span><span class="tech-pill">Soft Deletes</span><span class="tech-pill">Polymorphic Relations</span><span class="tech-pill">Laravel Policies (RBAC)</span><span class="tech-pill">WebSockets (real-time)</span>
+      </div>
+    </div>
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;text-align:center">
+        <div><div style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--cyan)">20</div><div style="color:var(--text2);font-size:.75rem">Database Tables</div></div>
+        <div><div style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--green)">12</div><div style="color:var(--text2);font-size:.75rem">Scan Modules</div></div>
+        <div><div style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--orange)">3</div><div style="color:var(--text2);font-size:.75rem">User Roles</div></div>
+        <div><div style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--purple)">3</div><div style="color:var(--text2);font-size:.75rem">Subscription Tiers</div></div>
+        <div><div style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--yellow)">2FA</div><div style="color:var(--text2);font-size:.75rem">Authentication</div></div>
+        <div><div style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--red)">SaaS</div><div style="color:var(--text2);font-size:.75rem">Multi-Tenant</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:2rem;color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.15em;border-top:1px solid var(--border)">
+  <span style="color:var(--cyan)">CYBERGUARD</span> &nbsp;·&nbsp; GRADUATION PROJECT &nbsp;·&nbsp; LARAVEL 12 + MYSQL &nbsp;·&nbsp; 2025
+</div>
+</body>
+</html>

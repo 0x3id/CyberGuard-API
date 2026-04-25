@@ -28,7 +28,7 @@ class RegisterRequest extends FormRequest
             'password' => 'required|min:6|confirmed|regex:/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/',
             'password_confirmation' => 'required|same:password',
             'full_name' => 'required|min:3|max:255|string',
-            'job_title' => 'required|min:3|max:255|string',
+            'job_tittle' => 'required|min:3|max:255|string',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
     }

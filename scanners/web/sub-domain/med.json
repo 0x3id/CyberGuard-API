@@ -1,0 +1,1193 @@
+{
+  "target": "medium.com",
+  "subdomains": [
+    {
+      "host": "010pixel.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "sepia.medium.com",
+      "ips": [
+        "52.21.239.123",
+        "52.2.54.95",
+        "52.5.177.42",
+        "52.21.199.220",
+        "52.21.214.164",
+        "52.21.218.24"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "noteworthy.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "cdn-images-1.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "disruption.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00x.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00manasyadav00.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00sik.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "glyph.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "cdn-videos.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "007seanconnolly.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "o1.email.medium.com",
+      "ips": [
+        "167.89.49.168"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "elemental.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "support.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "static.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "snowflake.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "007hlh.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "services.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00757045.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "jobs.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "37114207.mail.medium.com",
+      "ips": [
+        "46.51.200.92",
+        "54.216.50.79",
+        "3.79.130.38",
+        "18.158.228.216"
+      ],
+      "cnames": [
+        "sendgrid.net"
+      ],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "007vikaxh.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00feed.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "api.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "0-o.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "009genius.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "0101010.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "001-ltd.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "go.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "url104.mail.medium.com",
+      "ips": [],
+      "cnames": [],
+      "alive": false,
+      "issues": []
+    },
+    {
+      "host": "001-dharmendra.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00lenon.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "www.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00-talk.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "goldfinch.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00110011.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "jss.medium.com",
+      "ips": [
+        "35.164.66.228",
+        "54.212.138.156",
+        "35.155.36.130"
+      ],
+      "cnames": [
+        "medium.jamfcloud.com",
+        "atlas-196a59bd7da44c11aeb248afdb-1498514567.us-west-2.elb.amazonaws.com"
+      ],
+      "alive": true,
+      "issues": [
+        {
+          "type": "subdomain_takeover_risk",
+          "severity": "high",
+          "cvss_score": 8.1,
+          "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+          "cve_id": null,
+          "title": "Potential Subdomain Takeover \u2014 jss.medium.com",
+          "description": "The subdomain `jss.medium.com` has a CNAME record pointing to `atlas-196a59bd7da44c11aeb248afdb-1498514567.us-west-2.elb.amazonaws.com`, which appears to be an unclaimed or inactive third-party service. An attacker could register this service and serve malicious content under your domain.",
+          "remediation": "1. Verify whether the service at `atlas-196a59bd7da44c11aeb248afdb-1498514567.us-west-2.elb.amazonaws.com` is still in use.\n2. If not, remove the CNAME DNS record for `jss.medium.com` immediately.\n3. If still needed, re-claim the resource on the third-party platform."
+        }
+      ]
+    },
+    {
+      "host": "about.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "003aaw20.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "o9.email.medium.com",
+      "ips": [
+        "167.89.66.191"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "help.medium.com",
+      "ips": [
+        "216.198.53.11",
+        "216.198.54.11"
+      ],
+      "cnames": [
+        "medium.zendesk.com"
+      ],
+      "alive": true,
+      "issues": [
+        {
+          "type": "subdomain_takeover_risk",
+          "severity": "high",
+          "cvss_score": 8.1,
+          "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+          "cve_id": null,
+          "title": "Potential Subdomain Takeover \u2014 help.medium.com",
+          "description": "The subdomain `help.medium.com` has a CNAME record pointing to `medium.zendesk.com`, which appears to be an unclaimed or inactive third-party service. An attacker could register this service and serve malicious content under your domain.",
+          "remediation": "1. Verify whether the service at `medium.zendesk.com` is still in use.\n2. If not, remove the CNAME DNS record for `help.medium.com` immediately.\n3. If still needed, re-claim the resource on the third-party platform."
+        }
+      ]
+    },
+    {
+      "host": "o8.email.medium.com",
+      "ips": [
+        "167.89.66.175"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "link.medium.com",
+      "ips": [
+        "44.252.253.233",
+        "35.167.216.18",
+        "44.230.115.150"
+      ],
+      "cnames": [
+        "custom.bnc.lt"
+      ],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "cdnstatic-1.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "005rashmish.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "007pvnyk.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "01-flux.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "000gsb20.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "o5.email.medium.com",
+      "ips": [
+        "167.89.110.85"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "gomiro.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "o3.email.medium.com",
+      "ips": [
+        "167.89.65.228"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "010gvr.medium.com",
+      "ips": [],
+      "cnames": [],
+      "alive": false,
+      "issues": []
+    },
+    {
+      "host": "status.medium.com",
+      "ips": [
+        "76.76.21.164",
+        "66.33.60.34"
+      ],
+      "cnames": [
+        "statuspage.incident.io",
+        "cname.vercel-dns.com"
+      ],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00rheza.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00000000000.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "010nomad.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "cdn-audio-1.medium.com",
+      "ips": [
+        "108.159.102.39",
+        "108.159.102.107",
+        "108.159.102.83",
+        "108.159.102.112"
+      ],
+      "cnames": [
+        "d4ykqdf81nuuy.cloudfront.net"
+      ],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "developers.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "0-1.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "csp.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "gay.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "read.medium.com",
+      "ips": [
+        "52.11.118.109"
+      ],
+      "cnames": [
+        "thirdparty.bnc.lt"
+      ],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "0001better.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "007pknotiyal.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "cdnimages-2.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "cdn.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "url2204.mail.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "0-gauravjoshi.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "o7.email.medium.com",
+      "ips": [
+        "167.89.15.8"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "cdn-static-1.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "yourfriends.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "url9532.mail.medium.com",
+      "ips": [],
+      "cnames": [],
+      "alive": false,
+      "issues": []
+    },
+    {
+      "host": "cdnimages-1.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00277.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "collateral.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "onezero.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "fegrless-she-wrote.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "000kmmolloy.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "004eren.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00bilal.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "o6.email.medium.com",
+      "ips": [
+        "167.89.15.48"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "members.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "lightstep.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "001heroesof71.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "001170542.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "blog.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00089usama.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "007-deven.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "01110100101001.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "0123azhar.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "cdn-images-2.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "000000000.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "extracredit.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "012stephaniesmith.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "007khan-shahanshah.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "0140724.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "007bond.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "miro.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "legal.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "0109883.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "0199512.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "cdn-videos-1.medium.com",
+      "ips": [
+        "3.175.86.64",
+        "3.175.86.76",
+        "3.175.86.34",
+        "3.175.86.75"
+      ],
+      "cnames": [
+        "d16goovwk8p6cu.cloudfront.net"
+      ],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "humanparts.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "00pauln00.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "o2.email.medium.com",
+      "ips": [
+        "167.89.47.62"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "01356manish.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "o4.email.medium.com",
+      "ips": [
+        "167.89.110.59"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "publishers.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "brands.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "textshot.medium.com",
+      "ips": [
+        "162.159.152.4",
+        "162.159.153.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    },
+    {
+      "host": "images.medium.com",
+      "ips": [],
+      "cnames": [],
+      "alive": false,
+      "issues": []
+    },
+    {
+      "host": "00xbinary.medium.com",
+      "ips": [
+        "162.159.153.4",
+        "162.159.152.4"
+      ],
+      "cnames": [],
+      "alive": true,
+      "issues": []
+    }
+  ],
+  "findings": [
+    {
+      "type": "subdomain_takeover_risk",
+      "severity": "high",
+      "cvss_score": 8.1,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+      "cve_id": null,
+      "title": "Potential Subdomain Takeover \u2014 jss.medium.com",
+      "description": "The subdomain `jss.medium.com` has a CNAME record pointing to `atlas-196a59bd7da44c11aeb248afdb-1498514567.us-west-2.elb.amazonaws.com`, which appears to be an unclaimed or inactive third-party service. An attacker could register this service and serve malicious content under your domain.",
+      "remediation": "1. Verify whether the service at `atlas-196a59bd7da44c11aeb248afdb-1498514567.us-west-2.elb.amazonaws.com` is still in use.\n2. If not, remove the CNAME DNS record for `jss.medium.com` immediately.\n3. If still needed, re-claim the resource on the third-party platform."
+    },
+    {
+      "type": "subdomain_takeover_risk",
+      "severity": "high",
+      "cvss_score": 8.1,
+      "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+      "cve_id": null,
+      "title": "Potential Subdomain Takeover \u2014 help.medium.com",
+      "description": "The subdomain `help.medium.com` has a CNAME record pointing to `medium.zendesk.com`, which appears to be an unclaimed or inactive third-party service. An attacker could register this service and serve malicious content under your domain.",
+      "remediation": "1. Verify whether the service at `medium.zendesk.com` is still in use.\n2. If not, remove the CNAME DNS record for `help.medium.com` immediately.\n3. If still needed, re-claim the resource on the third-party platform."
+    }
+  ],
+  "stats": {
+    "total": 113,
+    "alive": 109,
+    "with_issues": 2
+  },
+  "scanned_at": "2026-04-10T20:14:36.641422+00:00"
+}

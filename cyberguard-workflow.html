@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberGuard — Backend Checklist</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@700;900&display=swap');
+
+:root {
+  --bg:     #04080f;
+  --bg2:    #07111c;
+  --bg3:    #0b1a27;
+  --border: #142d47;
+  --cyan:   #00d4ff;
+  --green:  #00ff9d;
+  --orange: #ff6b35;
+  --purple: #b46fff;
+  --yellow: #ffd600;
+  --red:    #ff3d5a;
+  --text:   #d0e8f8;
+  --text2:  #7a9bb5;
+  --text3:  #3a5c78;
+  --white:  #ffffff;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.7; overflow-x: hidden;
+}
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* ── NAV ── */
+#nav {
+  position: sticky; top:0; z-index:100;
+  background: rgba(4,8,15,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  display: flex; align-items: center; gap:0;
+  overflow-x: auto;
+}
+.nav-logo {
+  font-family:'Orbitron',sans-serif; font-weight:900;
+  font-size:.8rem; color:var(--white); letter-spacing:.1em;
+  white-space:nowrap; padding:.8rem 1.2rem .8rem 0;
+  border-right:1px solid var(--border); margin-right:.8rem;
+  flex-shrink:0;
+}
+.nav-logo span { color:var(--cyan); }
+.nav-a {
+  font-family:'JetBrains Mono',monospace; font-size:.58rem;
+  letter-spacing:.14em; text-transform:uppercase;
+  color:var(--text3); text-decoration:none;
+  padding:.8rem .7rem; white-space:nowrap;
+  border-bottom:2px solid transparent;
+  transition:color .15s, border-color .15s;
+}
+.nav-a:hover { color:var(--text2); }
+.nav-a.on { color:var(--cyan); border-bottom-color:var(--cyan); }
+
+/* ── PROGRESS BAR ── */
+#progress-bar {
+  position:sticky; top:42px; z-index:99;
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  padding:.6rem 1.5rem;
+  display:flex; align-items:center; gap:1rem;
+}
+.pb-label { font-family:'JetBrains Mono',monospace; font-size:.62rem; color:var(--text2); white-space:nowrap; }
+.pb-track { flex:1; height:6px; background:rgba(255,255,255,.06); border-radius:3px; overflow:hidden; }
+.pb-fill  { height:100%; background:linear-gradient(90deg,var(--cyan),var(--green)); border-radius:3px; transition:width .4s ease; }
+.pb-count { font-family:'JetBrains Mono',monospace; font-size:.62rem; white-space:nowrap; }
+.pb-count span { color:var(--cyan); font-weight:600; }
+.pb-reset {
+  font-family:'JetBrains Mono',monospace; font-size:.58rem;
+  color:var(--text3); background:none; border:1px solid var(--border);
+  border-radius:3px; padding:.2rem .6rem; cursor:pointer;
+  transition:color .15s, border-color .15s;
+}
+.pb-reset:hover { color:var(--orange); border-color:var(--orange); }
+
+/* ── HERO ── */
+.hero {
+  padding:4rem 2rem 3rem;
+  text-align:center; position:relative; overflow:hidden;
+}
+.hero-grid {
+  position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size:50px 50px;
+  animation:gridMove 20s linear infinite;
+}
+@keyframes gridMove { to { background-position:50px 50px; } }
+.hero h1 {
+  font-family:'Orbitron',sans-serif; font-weight:900;
+  font-size:clamp(1.8rem,5vw,3.5rem);
+  color:var(--white); letter-spacing:.08em; position:relative;
+  text-shadow:0 0 40px rgba(0,212,255,.2);
+}
+.hero h1 span { color:var(--cyan); }
+.hero-sub {
+  font-size:.9rem; color:var(--text2); margin-top:.8rem;
+  max-width:600px; margin-left:auto; margin-right:auto; position:relative;
+}
+.hero-badges {
+  display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center;
+  margin-top:1.5rem; position:relative;
+}
+.hb {
+  font-family:'JetBrains Mono',monospace; font-size:.62rem;
+  padding:.3rem .9rem; border-radius:3px; border:1px solid; letter-spacing:.1em;
+}
+.hb-c{background:rgba(0,212,255,.07);  border-color:rgba(0,212,255,.25); color:var(--cyan)}
+.hb-g{background:rgba(0,255,157,.06);  border-color:rgba(0,255,157,.25); color:var(--green)}
+.hb-p{background:rgba(180,111,255,.07);border-color:rgba(180,111,255,.25);color:var(--purple)}
+.hb-o{background:rgba(255,107,53,.07); border-color:rgba(255,107,53,.25); color:var(--orange)}
+.hb-y{background:rgba(255,214,0,.06);  border-color:rgba(255,214,0,.25);  color:var(--yellow)}
+
+/* ── PHASE BLOCK ── */
+.phase {
+  max-width:960px; margin:0 auto;
+  padding:2rem 1.5rem;
+}
+.phase + .phase { border-top:1px solid var(--border); }
+
+.phase-header {
+  display:flex; align-items:center; gap:1rem;
+  margin-bottom:1.5rem; cursor:pointer;
+  user-select:none;
+}
+.phase-num {
+  width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Orbitron',sans-serif; font-size:.78rem; font-weight:700;
+  flex-shrink:0;
+}
+.pn-c{background:rgba(0,212,255,.14);  border:2px solid var(--cyan);  color:var(--cyan)}
+.pn-g{background:rgba(0,255,157,.12);  border:2px solid var(--green); color:var(--green)}
+.pn-p{background:rgba(180,111,255,.12);border:2px solid var(--purple);color:var(--purple)}
+.pn-o{background:rgba(255,107,53,.12); border:2px solid var(--orange);color:var(--orange)}
+.pn-y{background:rgba(255,214,0,.12);  border:2px solid var(--yellow);color:var(--yellow)}
+.pn-r{background:rgba(255,61,90,.12);  border:2px solid var(--red);   color:var(--red)}
+
+.phase-title-wrap { flex:1; }
+.phase-title {
+  font-family:'IBM Plex Sans',sans-serif; font-weight:700;
+  font-size:1.05rem; color:var(--white);
+}
+.phase-subtitle { font-size:.8rem; color:var(--text2); margin-top:.15rem; }
+.phase-meta {
+  display:flex; gap:.5rem; align-items:center; flex-shrink:0;
+}
+.phase-count {
+  font-family:'JetBrains Mono',monospace; font-size:.62rem;
+  color:var(--text3); background:rgba(255,255,255,.04);
+  border:1px solid var(--border); border-radius:3px;
+  padding:.2rem .6rem; white-space:nowrap;
+}
+.phase-count span { color:var(--cyan); }
+.phase-toggle {
+  font-size:.8rem; color:var(--text3);
+  transition:transform .2s;
+}
+.phase-toggle.open { transform:rotate(180deg); }
+
+.phase-body { display:block; }
+.phase-body.collapsed { display:none; }
+
+/* ── SECTION INSIDE PHASE ── */
+.section {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:8px; margin-bottom:1rem; overflow:hidden;
+}
+.section-head {
+  display:flex; align-items:center; gap:.7rem;
+  padding:.75rem 1.1rem;
+  border-bottom:1px solid var(--border);
+  background:rgba(0,0,0,.2);
+}
+.section-icon { font-size:1rem; flex-shrink:0; }
+.section-name {
+  font-size:.88rem; font-weight:600; color:var(--white); flex:1;
+}
+.section-tag {
+  font-family:'JetBrains Mono',monospace; font-size:.56rem;
+  letter-spacing:.16em; text-transform:uppercase;
+  padding:.18rem .6rem; border-radius:2px;
+}
+.st-c{background:rgba(0,212,255,.1); color:var(--cyan);   border:1px solid rgba(0,212,255,.25)}
+.st-g{background:rgba(0,255,157,.08);color:var(--green);  border:1px solid rgba(0,255,157,.25)}
+.st-o{background:rgba(255,107,53,.1);color:var(--orange); border:1px solid rgba(255,107,53,.25)}
+.st-p{background:rgba(180,111,255,.1);color:var(--purple);border:1px solid rgba(180,111,255,.25)}
+.st-y{background:rgba(255,214,0,.08); color:var(--yellow);border:1px solid rgba(255,214,0,.25)}
+.st-r{background:rgba(255,61,90,.1);  color:var(--red);   border:1px solid rgba(255,61,90,.25)}
+
+/* ── CHECKLIST ITEMS ── */
+.items { padding:.4rem .5rem .6rem; display:flex; flex-direction:column; gap:2px; }
+
+.item {
+  display:grid;
+  grid-template-columns:32px 1fr auto;
+  border-radius:5px;
+  cursor:pointer;
+  transition:background .12s;
+  align-items:start;
+}
+.item:hover { background:rgba(0,212,255,.03); }
+
+.item-cb {
+  display:flex; align-items:center; justify-content:center;
+  padding:.6rem 0 0;
+  flex-shrink:0;
+}
+.cb-box {
+  width:16px; height:16px; border-radius:3px;
+  border:1px solid var(--border); background:transparent;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s; flex-shrink:0;
+  font-size:.7rem; color:transparent;
+}
+.item.done .cb-box {
+  background:var(--cyan); border-color:var(--cyan);
+  color:var(--bg); font-size:.65rem;
+}
+.item.done .item-text { color:var(--text3); text-decoration:line-through; }
+.item.done .item-note { opacity:.4; }
+
+.item-content { padding:.55rem .3rem .55rem 0; }
+.item-text {
+  font-size:.84rem; color:var(--text);
+  line-height:1.5; transition:color .15s;
+}
+.item-text code {
+  font-family:'JetBrains Mono',monospace; font-size:.78em;
+  background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.08);
+  padding:.08em .4em; border-radius:3px; color:var(--cyan);
+}
+.item-text code.g { color:var(--green); }
+.item-text code.o { color:var(--orange); }
+.item-text code.y { color:var(--yellow); }
+.item-text code.r { color:var(--red); }
+.item-text code.p { color:var(--purple); }
+.item-note {
+  font-size:.72rem; color:var(--text3); margin-top:.2rem;
+  line-height:1.5; font-style:italic;
+}
+.item-note code {
+  font-family:'JetBrains Mono',monospace; font-size:.85em;
+  background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.06);
+  padding:.05em .35em; border-radius:3px; color:var(--text2);
+}
+
+.item-badge {
+  padding:.55rem .5rem 0 0;
+  flex-shrink:0; align-self:start;
+}
+.ib {
+  font-family:'JetBrains Mono',monospace; font-size:.5rem;
+  padding:.15rem .4rem; border-radius:2px; letter-spacing:.1em;
+  text-transform:uppercase; white-space:nowrap;
+}
+.ib-req { background:rgba(255,61,90,.08);   color:var(--red);    border:1px solid rgba(255,61,90,.2) }
+.ib-imp { background:rgba(255,214,0,.07);   color:var(--yellow); border:1px solid rgba(255,214,0,.2) }
+.ib-opt { background:rgba(122,155,181,.08); color:var(--text2);  border:1px solid rgba(122,155,181,.18) }
+.ib-sec { background:rgba(255,107,53,.08);  color:var(--orange); border:1px solid rgba(255,107,53,.2) }
+
+/* ── NOTE BOX ── */
+.note-box {
+  display:flex; gap:.7rem; align-items:flex-start;
+  border-radius:5px; padding:.8rem 1rem;
+  margin:.4rem .5rem .6rem;
+  font-size:.8rem; line-height:1.7;
+}
+.note-icon { flex-shrink:0; font-size:.95rem; margin-top:1px; }
+.note-body { flex:1; }
+.note-title { font-weight:700; margin-bottom:.15rem; }
+.nb-c{background:rgba(0,212,255,.05);  border:1px solid rgba(0,212,255,.18); color:#90c8e0} .nb-c .note-title{color:var(--cyan)}
+.nb-y{background:rgba(255,214,0,.04);  border:1px solid rgba(255,214,0,.18); color:#c8b870} .nb-y .note-title{color:var(--yellow)}
+.nb-o{background:rgba(255,107,53,.05); border:1px solid rgba(255,107,53,.18);color:#c89070} .nb-o .note-title{color:var(--orange)}
+.nb-g{background:rgba(0,255,157,.04);  border:1px solid rgba(0,255,157,.18); color:#80c8a0} .nb-g .note-title{color:var(--green)}
+
+/* ── SEPARATOR ── */
+.sep { border:none; border-top:1px solid var(--border); margin:0; }
+
+/* ── FOOTER ── */
+footer {
+  text-align:center; padding:2rem;
+  color:var(--text3); font-family:'JetBrains Mono',monospace;
+  font-size:.62rem; letter-spacing:.15em;
+  border-top:1px solid var(--border);
+}
+footer span { color:var(--cyan); }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="nav">
+  <div class="nav-logo">CYBER<span>GUARD</span></div>
+  <a class="nav-a on"  href="#phase-1">🔐 Auth</a>
+  <a class="nav-a"     href="#phase-2">📁 Projects</a>
+  <a class="nav-a"     href="#phase-3">👥 Collab</a>
+  <a class="nav-a"     href="#phase-4">🎯 Targets</a>
+  <a class="nav-a"     href="#phase-5">🔍 Scans</a>
+  <a class="nav-a"     href="#phase-6">⚠️ Findings</a>
+  <a class="nav-a"     href="#phase-7">🎣 Phishing</a>
+  <a class="nav-a"     href="#phase-8">📄 Reports</a>
+  <a class="nav-a"     href="#phase-9">🔒 Security</a>
+</nav>
+
+<!-- ── PROGRESS ── -->
+<div id="progress-bar">
+  <span class="pb-label">OVERALL PROGRESS</span>
+  <div class="pb-track"><div class="pb-fill" id="pb-fill" style="width:0%"></div></div>
+  <span class="pb-count"><span id="pb-done">0</span> / <span id="pb-total">0</span> tasks</span>
+  <button class="pb-reset" onclick="resetAll()">Reset</button>
+</div>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <h1>BACKEND <span>CHECKLIST</span></h1>
+  <p class="hero-sub">Every task you need to implement — organized by phase, matched to the DB schema, with the scan execution approach included.</p>
+  <div class="hero-badges">
+    <span class="hb hb-c">Laravel 12</span>
+    <span class="hb hb-g">MySQL — 20 Tables</span>
+    <span class="hb hb-p">Docker + Queue</span>
+    <span class="hb hb-o">WebSocket</span>
+    <span class="hb hb-y">Laravel Sanctum</span>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 1 — AUTH & USERS
+═══════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-1">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div class="phase-num pn-c">01</div>
+    <div class="phase-title-wrap">
+      <div class="phase-title">Authentication &amp; User Management</div>
+      <div class="phase-subtitle">users · user_subscriptions · personal_access_tokens</div>
+    </div>
+    <div class="phase-meta">
+      <div class="phase-count" id="count-phase-1"><span>0</span>/0</div>
+      <div class="phase-toggle open">▼</div>
+    </div>
+  </div>
+
+  <div class="phase-body" id="body-phase-1">
+
+    <!-- Registration -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">📝</div>
+        <div class="section-name">Registration</div>
+        <div class="section-tag st-c">ROUTE · POST /api/auth/register</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>RegisterRequest</code> — validate: <code>name</code>, <code>email</code> (unique in users), <code>password</code> (min 8, confirmed)</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>User</code> record — store <code>password</code> as bcrypt, set <code>email_verified_at = null</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>UserSubscription</code> record automatically — plan: <code class="y">free</code>, status: <code class="g">active</code>, set default limits</div><div class="item-note">max_projects=3, max_targets=10, max_scans_per_month=10</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Send verification email using <code>MustVerifyEmail</code> interface — dispatch <code>SendEmailVerificationNotification</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Handle <code>GET /api/auth/verify-email/{id}/{hash}</code> — validate signed URL, set <code>email_verified_at = now()</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Return <code>201</code> with user object — do NOT return a token yet (must verify email first)</div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+      </div>
+    </div>
+
+    <!-- Login -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🔑</div>
+        <div class="section-name">Login + 2FA</div>
+        <div class="section-tag st-c">ROUTE · POST /api/auth/login</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Validate email + password with <code>Auth::attempt()</code> — return <code class="r">401</code> on failure</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Check <code>email_verified_at</code> — if null return <code class="r">403</code> with message "Please verify your email"</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Check if <code>two_factor_secret</code> is set — if yes: return <code>requires_2fa: true</code> with a short-lived temp token (no full access)</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Handle <code>POST /api/auth/2fa/verify</code> — validate TOTP code using <code>pragmarx/google2fa-laravel</code>, issue full Sanctum token on success</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Issue Sanctum token via <code>$user->createToken('api')->plainTextToken</code> — update <code>last_login_at = now()</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Apply rate limiting — max 5 login attempts per IP per 15 minutes using <code>RateLimiter</code></div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Handle <code>POST /api/auth/logout</code> — revoke current token via <code>$request->user()->currentAccessToken()->delete()</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+    <!-- 2FA Setup -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🛡</div>
+        <div class="section-name">2FA Setup (Google Authenticator)</div>
+        <div class="section-tag st-p">ROUTES · /api/auth/2fa/*</div>
+      </div>
+      <div class="note-box nb-c">
+        <div class="note-icon">📦</div>
+        <div class="note-body"><div class="note-title">Package Already Installed</div>Use <code>pragmarx/google2fa-laravel</code> — already in the project from the 2FA work done earlier.</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Handle <code>POST /api/auth/2fa/enable</code> — generate secret with <code>Google2FA::generateSecretKey()</code>, return QR code URL</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Handle <code>POST /api/auth/2fa/confirm</code> — user submits first code to confirm setup, store <code>two_factor_secret</code> encrypted in DB</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Handle <code>POST /api/auth/2fa/disable</code> — require current password confirmation, set <code>two_factor_secret = null</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+    <!-- Password Reset -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🔄</div>
+        <div class="section-name">Password Reset</div>
+        <div class="section-tag st-c">ROUTES · /api/auth/forgot-password · /api/auth/reset-password</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Handle <code>POST /api/auth/forgot-password</code> — generate reset token, store in <code>password_reset_tokens</code>, send email (always return 200 regardless of email existence)</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Handle <code>POST /api/auth/reset-password</code> — validate token (not expired, max 60 min), update password, delete token, revoke ALL existing Sanctum tokens</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 2 — ORGANIZATIONS & SUBSCRIPTIONS
+═══════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-2">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div class="phase-num pn-g">02</div>
+    <div class="phase-title-wrap">
+      <div class="phase-title">Organizations &amp; Subscriptions</div>
+      <div class="phase-subtitle">organizations · organization_members · organization_subscriptions · user_subscriptions</div>
+    </div>
+    <div class="phase-meta">
+      <div class="phase-count" id="count-phase-2"><span>0</span>/0</div>
+      <div class="phase-toggle open">▼</div>
+    </div>
+  </div>
+
+  <div class="phase-body" id="body-phase-2">
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🏢</div>
+        <div class="section-name">Organization CRUD</div>
+        <div class="section-tag st-g">ROUTES · /api/organizations/*</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create organization — store <code>owner_id = auth()->id()</code>, auto-generate <code>slug</code> from name (unique), add creator to <code>organization_members</code> as <code class="y">owner</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Invite member to org — <code>POST /api/organizations/{id}/members</code> — create <code>organization_members</code> row, roles: <code>admin</code> / <code>member</code> / <code>viewer</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Remove member — only <code>owner</code> or <code>admin</code> can remove. Owner cannot remove themselves.</div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>OrganizationPolicy</code> — use it on all org routes to check membership and role</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">💳</div>
+        <div class="section-name">Subscription Quota Enforcement</div>
+        <div class="section-tag st-y">MIDDLEWARE · CheckQuota</div>
+      </div>
+      <div class="note-box nb-y">
+        <div class="note-icon">⚠️</div>
+        <div class="note-body"><div class="note-title">Apply This BEFORE Every Create Action</div>Check quota before creating: projects, targets, scans. Return <code>403</code> with remaining count if exceeded.</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>CheckProjectQuota</code> middleware — compare user's active projects count vs <code>user_subscriptions.max_projects</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>CheckScanQuota</code> middleware — count scans this calendar month from <code>scan_jobs</code> vs <code>max_scans_per_month</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">When org owns a project, check <code>organization_subscriptions</code> quota instead of user quota</div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 3 — PROJECTS & COLLABORATION
+═══════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-3">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div class="phase-num pn-p">03</div>
+    <div class="phase-title-wrap">
+      <div class="phase-title">Projects &amp; Collaboration</div>
+      <div class="phase-subtitle">projects · project_collaborators · project_invitations</div>
+    </div>
+    <div class="phase-meta">
+      <div class="phase-count" id="count-phase-3"><span>0</span>/0</div>
+      <div class="phase-toggle open">▼</div>
+    </div>
+  </div>
+
+  <div class="phase-body" id="body-phase-3">
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">📁</div>
+        <div class="section-name">Project CRUD</div>
+        <div class="section-tag st-p">ROUTES · /api/projects/*</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create project — set <code>owner_type</code> + <code>owner_id</code> (polymorphic), set <code>created_by = auth()->id()</code></div><div class="item-note">owner_type is either "App\Models\User" or "App\Models\Organization"</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">After creating project — auto-insert creator into <code>project_collaborators</code> with <code>role = owner</code>, <code>status = accepted</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>ProjectPolicy</code> with methods: <code>view</code>, <code>create</code>, <code>update</code>, <code>delete</code>, <code>archive</code> — check role from <code>project_collaborators</code></div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Index endpoint — only return projects where <code>auth()->id()</code> exists in <code>project_collaborators</code> with accepted status</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Archive endpoint — set <code>status = archived</code> — only Owner can do this</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Delete uses Soft Delete — <code>SoftDeletes</code> trait already in migration. Cascades to targets, scan_jobs, findings via <code>deleting</code> model event</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">✉️</div>
+        <div class="section-name">Invite System</div>
+        <div class="section-tag st-p">ROUTES · /api/projects/{id}/invitations/*</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create invitation — generate <code>token = Str::random(64)</code>, store in <code>project_invitations</code> with <code>role</code>, <code>expires_at = now()->addDays(7)</code>, <code>status = pending</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Check before creating — invited user not already in <code>project_collaborators</code> + collaborator count &lt; <code>max_collaborators</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">If email provided — dispatch queued mail job with invite link: <code>/invite/{token}</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Accept endpoint <code>POST /api/invitations/{token}/accept</code> — validate: token exists, not expired (<code>expires_at > now()</code>), status is pending</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">On accept — create <code>project_collaborators</code> row with <code>role</code> from invitation + <code>status = accepted</code>, mark invitation as <code>accepted</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Remove collaborator <code>DELETE /api/projects/{id}/collaborators/{userId}</code> — check: auth user is Owner, target is not Owner, target is not themselves</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Change role <code>PATCH /api/projects/{id}/collaborators/{userId}</code> — only Owner can do this, cannot downgrade sole Owner</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Schedule command to expire pending invitations — run daily, set <code>status = expired</code> where <code>expires_at &lt; now()</code></div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 4 — TARGETS
+═══════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-4">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div class="phase-num pn-o">04</div>
+    <div class="phase-title-wrap">
+      <div class="phase-title">Targets</div>
+      <div class="phase-subtitle">targets</div>
+    </div>
+    <div class="phase-meta">
+      <div class="phase-count" id="count-phase-4"><span>0</span>/0</div>
+      <div class="phase-toggle open">▼</div>
+    </div>
+  </div>
+
+  <div class="phase-body" id="body-phase-4">
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🎯</div>
+        <div class="section-name">Target CRUD &amp; Validation</div>
+        <div class="section-tag st-o">ROUTES · /api/projects/{id}/targets/*</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create target — validate <code>type</code> enum: <code class="c">domain</code> / <code class="c">ip</code> / <code class="c">network</code>, validate <code>value</code> format per type</div><div class="item-note">domain → filter_var(FILTER_VALIDATE_DOMAIN) · ip → filter_var(FILTER_VALIDATE_IP) · network → regex CIDR /api/projects</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">For network ranges — enforce max /24 (255 hosts): parse CIDR and reject anything larger</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Set <code>is_verified = false</code> on creation. <code>risk_score = 0.00</code> initially</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Check target quota against <code>user_subscriptions.max_targets</code> before creating</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Domain verification flow — <code>POST /api/targets/{id}/verify</code>: generate a TXT record value, store it, check DNS via <code>dns_get_record()</code>, set <code>is_verified = true</code> if found</div></div><div class="item-badge"><span class="ib ib-opt">optional</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Add <code>recalculateRiskScore()</code> method on Target model — formula: <code>(critical×10 + high×7 + medium×4 + low×1)</code> normalized to 0–10 scale, save to <code>risk_score</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Only Owner and Editor can add/edit/delete targets. Viewer can only read.</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 5 — SCAN SYSTEM (CORE)
+═══════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-5">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div class="phase-num pn-p">05</div>
+    <div class="phase-title-wrap">
+      <div class="phase-title">Scan System — Queue + Docker + WebSocket</div>
+      <div class="phase-subtitle">scan_jobs · scan_modules · scan_job_modules (pivot)</div>
+    </div>
+    <div class="phase-meta">
+      <div class="phase-count" id="count-phase-5"><span>0</span>/0</div>
+      <div class="phase-toggle open">▼</div>
+    </div>
+  </div>
+
+  <div class="phase-body" id="body-phase-5">
+
+    <!-- How it works -->
+    <div class="note-box nb-c" style="margin:.4rem .5rem">
+      <div class="note-icon">🐳</div>
+      <div class="note-body">
+        <div class="note-title">How Scan Execution Works</div>
+        User calls API → Controller creates <code>scan_job</code> → dispatches <code>RunScanJob</code> to Redis queue → Queue Worker picks it up → for each module: runs <code>docker run cyberguard/{module} {target}</code> → script inside container runs the tool (nmap / subfinder / etc.) → outputs JSON to stdout → Laravel reads stdout → creates <code>Finding</code> records → broadcasts <code>ScanCompleted</code> via WebSocket → frontend updates live.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">⚙️</div>
+        <div class="section-name">Infrastructure Setup</div>
+        <div class="section-tag st-p">ONE-TIME SETUP</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Set <code>QUEUE_CONNECTION=redis</code> in <code>.env</code> — install <code>predis/predis</code> package</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Set <code>BROADCAST_DRIVER=pusher</code> (or use <code>laravel-websockets</code> for self-hosted) — install <code>pusher/pusher-php-server</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Make sure Docker is installed on the server and the Laravel process user can run <code>docker run</code> — add user to <code>docker</code> group</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create a dedicated Docker network: <code class="o">docker network create cyberguard-scan-net --driver bridge --internal</code></div><div class="item-note">--internal means containers on this network have NO internet access — scan target only via explicit routing</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Seed <code>scan_modules</code> table — one row per module with <code>slug</code>, <code>name</code>, <code>docker_image</code>, <code>category</code>, <code>is_active = true</code></div><div class="item-note">slugs: sqli, xss, csrf, port-scan, ssl-check, subdomain-enum, http-headers, cors-check, banner-grab, whois, dir-bruteforce, cve-lookup</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Run queue worker with Supervisor: <code class="o">php artisan queue:work redis --queue=scans --timeout=300 --tries=1</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🚀</div>
+        <div class="section-name">Scan Controller &amp; Job Dispatch</div>
+        <div class="section-tag st-p">ROUTE · POST /api/projects/{id}/scans</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Validate request — <code>target_id</code> belongs to this project, <code>type</code> in [auto, targeted], if targeted: <code>modules</code> array of valid slugs from <code>scan_modules</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Check scan quota — count this month's <code>scan_jobs</code> for this user, compare to <code>max_scans_per_month</code>. Return <code class="r">403</code> if exceeded.</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>ScanJob</code> record — <code>status = pending</code>, <code>initiated_by = auth()->id()</code>, store modules JSON if targeted</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Dispatch <code>RunScanJob::dispatch($scanJob)->onQueue('scans')</code> — return <code>201</code> immediately, do not wait for scan to finish</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Protect with Policy — only <code>owner</code> and <code>editor</code> can launch scans. <code>viewer</code> gets <code class="r">403</code>.</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🔧</div>
+        <div class="section-name">RunScanJob — Queue Job</div>
+        <div class="section-tag st-p">app/Jobs/RunScanJob.php</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Set <code>$timeout = 300</code> (5 min) and <code>$tries = 1</code> on the job class — no retries for scans</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">On <code>handle()</code> start: set <code>status = running</code>, <code>started_at = now()</code>, broadcast <code>ScanStatusUpdated</code> event</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Resolve modules list — if <code>auto</code>: get all active modules from <code>scan_modules</code> table. If <code>targeted</code>: use stored modules from <code>scan_job</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Loop over modules — call <code>ScanExecutor::run($module, $target->value)</code> — wrap each in try/catch so one module failure doesn't stop others</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">On success: set <code>status = completed</code>, <code>finished_at = now()</code>, call <code>$target->recalculateRiskScore()</code>, broadcast <code>ScanCompleted</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Implement <code>failed(Throwable $e)</code> method — set <code>status = failed</code>, store <code>error_message = $e->getMessage()</code>, broadcast <code>ScanFailed</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🐳</div>
+        <div class="section-name">ScanExecutor — Docker Runner</div>
+        <div class="section-tag st-p">app/Services/ScanExecutor.php</div>
+      </div>
+      <div class="note-box nb-o">
+        <div class="note-icon">🔒</div>
+        <div class="note-body"><div class="note-title">Security: Never Interpolate Target into Shell String</div>Always use <code>Process::run(['docker', 'run', ..., $target])</code> — passing target as a separate array item, NOT as part of a string. This prevents command injection at the OS level.</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>ScanExecutor</code> service class — one method <code>run(string $module, string $target): array</code> that dispatches to the correct Docker command</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Validate target format again inside ScanExecutor (second layer) before passing to Docker</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Run Docker with hardened flags: <code class="o">docker run --rm --network=cyberguard-scan-net --memory=256m --cpus=0.5 --read-only --security-opt=no-new-privileges cyberguard/{module} {target}</code></div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Use <code>Process::timeout(180)->run([...])</code> — read stdout as JSON, throw exception if <code>$result->failed()</code> or JSON is invalid</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Map the JSON output to Finding schema — each module returns an array of findings with: <code>title</code>, <code>description</code>, <code>severity</code>, <code>cvss_score</code>, <code>cvss_vector</code>, <code>remediation</code>, <code>raw_output</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">📦</div>
+        <div class="section-name">Docker Images — One Per Module</div>
+        <div class="section-tag st-p">docker/ directory</div>
+      </div>
+      <div class="note-box nb-c">
+        <div class="note-icon">📁</div>
+        <div class="note-body"><div class="note-title">Structure for Each Module</div><code>docker/{module-name}/Dockerfile</code> → installs the tool (nmap, subfinder, etc.) + <code>docker/{module-name}/scan.py</code> (or scan.sh) → runs the tool, parses output, prints JSON to stdout.</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text"><strong>port-scan</strong> — Dockerfile installs <code>nmap</code> on Alpine. Script runs <code>nmap -sV -T4 --open -oX -</code>, parses XML, outputs JSON with open ports + services</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text"><strong>subdomain-enum</strong> — installs <code>subfinder</code> + <code>dnsx</code>. Runs subfinder for discovery, dnsx for DNS resolution, checks for takeover risk + sensitive names</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text"><strong>ssl-check</strong> — uses <code>openssl s_client</code>. Checks: expiry days, weak protocols (SSLv2/3, TLS1.0/1.1), weak ciphers, certificate chain</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text"><strong>http-headers</strong> — uses <code>curl</code>. Checks for missing: HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text"><strong>dir-bruteforce</strong> — installs <code>ffuf</code>. Uses a curated wordlist. Outputs found paths with status codes. Max 1000 requests enforced.</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text"><strong>whois</strong> — runs <code>whois {target}</code>, parses registrant, expiry, nameservers into JSON</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text"><strong>banner-grab</strong> — uses <code>nmap --script banner</code> or <code>nc</code>. Grabs service banners, checks version against known vulnerable versions list</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text"><strong>sqli, xss, csrf, cors-check, cve-lookup</strong> — each needs its own Dockerfile + script. Can use Python with <code>requests</code> library or existing tools.</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Every script must: (1) validate input domain/IP with regex before doing anything, (2) print only valid JSON to stdout, (3) print errors to stderr only</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Build all images and push to local registry or tag them: <code class="o">docker build -t cyberguard/port-scan ./docker/port-scan</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">📡</div>
+        <div class="section-name">WebSocket Events (Broadcasting)</div>
+        <div class="section-tag st-p">app/Events/</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>ScanStatusUpdated</code> event — broadcasts on <code>PrivateChannel('project.{project_id}')</code> — payload: scan_job id + status</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>ScanCompleted</code> event — payload: scan_job, findings array (title, severity, cvss_score, status), new risk_score</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>ScanFailed</code> event — payload: scan_job id, error_message</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Add channel authorization in <code>routes/channels.php</code> — <code>Broadcast::channel('project.{id}', fn($user, $id) => $user->isCollaboratorOn($id))</code></div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 6 — FINDINGS & EVIDENCE
+═══════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-6">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div class="phase-num pn-r">06</div>
+    <div class="phase-title-wrap">
+      <div class="phase-title">Findings &amp; Evidence</div>
+      <div class="phase-subtitle">findings · finding_evidences</div>
+    </div>
+    <div class="phase-meta">
+      <div class="phase-count" id="count-phase-6"><span>0</span>/0</div>
+      <div class="phase-toggle open">▼</div>
+    </div>
+  </div>
+
+  <div class="phase-body" id="body-phase-6">
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">⚠️</div>
+        <div class="section-name">Findings CRUD</div>
+        <div class="section-tag st-r">ROUTES · /api/projects/{id}/findings/*</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Index — list all findings for a project. Support filter by: <code>severity</code>, <code>status</code>, <code>target_id</code>. Sort by <code>cvss_score DESC</code> by default.</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Manual create — Owner/Editor can add findings manually (not just from scans). Validate: <code>title</code>, <code>severity</code> enum, <code>status = open</code> by default</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Update finding status — validate status transitions: <code class="r">open</code> → <code class="y">in_progress</code> → <code class="g">resolved</code> or <code>accepted_risk</code>. If <code>accepted_risk</code>: require <code>acceptance_note</code> field.</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">After any status change — call <code>$target->recalculateRiskScore()</code> to update the target's risk score</div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Viewer role can only read findings — cannot update status or add evidences. Enforced via <code>FindingPolicy</code>.</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">📸</div>
+        <div class="section-name">Evidence Attachments</div>
+        <div class="section-tag st-r">ROUTES · /api/findings/{id}/evidences</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Upload endpoint — validate file: max 10MB, allowed MIME types (image/png, image/jpeg, text/plain, application/json). Type enum: <code>screenshot</code> / <code>request</code> / <code>log</code> / <code>file</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Stream file directly to S3 using <code>Storage::disk('s3')->put('evidences/{finding_id}/{uuid}.ext', $file)</code> — never save to local disk</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>FindingEvidence</code> record — store <code>file_path</code> (S3 key), <code>type</code>, <code>captured_at = now()</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Return pre-signed S3 URL (valid 1 hour) for immediate display — generate via <code>Storage::disk('s3')->temporaryUrl($path, now()->addHour())</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Configure MinIO as S3-compatible storage for local/self-hosted dev — set <code>AWS_ENDPOINT</code> in <code>.env</code></div></div><div class="item-badge"><span class="ib ib-opt">optional</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 7 — PHISHING
+═══════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-7">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div class="phase-num pn-o">07</div>
+    <div class="phase-title-wrap">
+      <div class="phase-title">Phishing Simulation</div>
+      <div class="phase-subtitle">phishing_campaigns · phishing_targets · phishing_events</div>
+    </div>
+    <div class="phase-meta">
+      <div class="phase-count" id="count-phase-7"><span>0</span>/0</div>
+      <div class="phase-toggle open">▼</div>
+    </div>
+  </div>
+
+  <div class="phase-body" id="body-phase-7">
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🎣</div>
+        <div class="section-name">Campaign Management</div>
+        <div class="section-tag st-o">ROUTES · /api/phishing/*</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create campaign — validate: <code>name</code>, <code>subject</code>, <code>body</code>, <code>sender_name</code>, <code>sender_email</code>, <code>phishing_url</code>. Set <code>status = draft</code>, link to <code>project_id</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Import targets — <code>POST /api/phishing/{id}/targets/import</code>: parse CSV (name, email, department), create one <code>PhishingTarget</code> per row with <code>token = Str::uuid()</code>, <code>awareness_score = 100</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Launch campaign — <code>POST /api/phishing/{id}/launch</code>: set <code>status = running</code>, <code>sent_at = now()</code>, dispatch <code>SendPhishingEmailsJob</code> to queue</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">In <code>SendPhishingEmailsJob</code> — send emails in batches with <code>Bus::batch()</code> or use throttle middleware. Each email contains: tracking pixel + phishing link with token embedded</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">After all emails sent — create <code>PhishingEvent(type: sent)</code> for each target</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">📊</div>
+        <div class="section-name">Tracking Endpoints (Public — No Auth)</div>
+        <div class="section-tag st-o">ROUTES · No middleware — must be public</div>
+      </div>
+      <div class="note-box nb-y">
+        <div class="note-icon">⚠️</div>
+        <div class="note-body"><div class="note-title">These Routes Must Be Outside Auth Middleware</div>Employees clicking the link are not system users. Routes must be public but token-protected — only valid token = valid tracking.</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Open tracking — <code>GET /track/{token}/open</code>: find target by token, create <code>PhishingEvent(type: opened)</code>, deduct 40 from <code>awareness_score</code>, return 1×1 transparent PNG</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Click tracking — <code>GET /track/{token}/click</code>: create <code>PhishingEvent(type: clicked)</code>, deduct 30 from score, redirect to the phishing landing page</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Submit tracking — <code>POST /track/{token}/submit</code>: create <code>PhishingEvent(type: submitted)</code>, deduct 20 from score. <strong>DO NOT store submitted credentials</strong> — just record the event</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Store <code>ip_address</code> and <code>user_agent</code> on every event for analysis. Clamp <code>awareness_score</code> min at 0.</div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Prevent duplicate events — check if event type already exists for this target before creating. One <code>opened</code> event per target, not multiple.</div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 8 — REPORTS
+═══════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-8">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div class="phase-num pn-g">08</div>
+    <div class="phase-title-wrap">
+      <div class="phase-title">PDF Report Generation</div>
+      <div class="phase-subtitle">project_reports</div>
+    </div>
+    <div class="phase-meta">
+      <div class="phase-count" id="count-phase-8"><span>0</span>/0</div>
+      <div class="phase-toggle open">▼</div>
+    </div>
+  </div>
+
+  <div class="phase-body" id="body-phase-8">
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">📄</div>
+        <div class="section-name">Report Generation Flow</div>
+        <div class="section-tag st-g">ROUTE · POST /api/projects/{id}/reports</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Only Owner or Editor can generate. Viewer can only download existing ones. Enforce via <code>ReportPolicy</code>.</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Dispatch <code>GenerateReportJob</code> to queue — never render PDF in the HTTP request (too slow). Return <code>202 Accepted</code> immediately.</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">In job: load project with all relations eager-loaded — findings (with evidences), scan_jobs, targets, phishing_campaigns</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Render Blade view <code>resources/views/reports/project.blade.php</code> → pass to DomPDF (<code>barryvdh/laravel-dompdf</code>) → get PDF binary</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Store PDF to S3: <code>Storage::disk('s3')->put("reports/{project_id}/{timestamp}.pdf", $pdf)</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>ProjectReport</code> record — store <code>file_path</code>, <code>risk_score_snapshot</code> (current value), <code>findings_count</code> as JSON by severity</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Broadcast <code>ReportGenerated</code> event → frontend shows download button with pre-signed S3 URL (1 hour expiry)</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Download endpoint <code>GET /api/projects/{id}/reports/{reportId}/download</code> — generate fresh pre-signed URL and redirect to it</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 9 — SECURITY & AUDIT
+═══════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-9">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div class="phase-num pn-r">09</div>
+    <div class="phase-title-wrap">
+      <div class="phase-title">Security, Audit Logs &amp; Global Tasks</div>
+      <div class="phase-subtitle">audit_logs · global middleware · final checks</div>
+    </div>
+    <div class="phase-meta">
+      <div class="phase-count" id="count-phase-9"><span>0</span>/0</div>
+      <div class="phase-toggle open">▼</div>
+    </div>
+  </div>
+
+  <div class="phase-body" id="body-phase-9">
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">📋</div>
+        <div class="section-name">Audit Logs</div>
+        <div class="section-tag st-r">AUTOMATIC — Model Observers</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Create <code>AuditLog</code> model observer — logs: created, updated, deleted events for: Project, Target, Finding, ScanJob, PhishingCampaign</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Store in <code>audit_logs</code>: <code>user_id</code>, <code>action</code> (e.g. "finding.status_changed"), <code>auditable_type</code>, <code>auditable_id</code>, <code>old_values</code>, <code>new_values</code>, <code>ip_address</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Audit logs are append-only — no <code>SoftDeletes</code>, no update allowed. Only admins can read them.</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">🔒</div>
+        <div class="section-name">Global Security Checklist</div>
+        <div class="section-tag st-r">APPLY EVERYWHERE</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">All routes that return data — scope queries so a user can only see their own data. Never trust user-provided IDs without ownership check.</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Use <code>FormRequest</code> classes on ALL endpoints — never validate inside the controller directly</div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Use <code>API Resources</code> (<code>JsonResource</code>) for all responses — never return raw Eloquent models directly. Control exactly what fields are exposed.</div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Add <code>throttle:60,1</code> middleware to all API routes — additional stricter throttle on auth routes</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">All DB columns that store sensitive data (<code>two_factor_secret</code>, <code>phishing_url</code>) — use Laravel's <code>encrypted</code> cast</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Set <code>APP_DEBUG=false</code> and <code>APP_ENV=production</code> in production <code>.env</code> — never expose stack traces to API consumers</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Register all Policies in <code>AuthServiceProvider</code> and use <code>$this->authorize()</code> in every controller method that touches a resource</div></div><div class="item-badge"><span class="ib ib-sec">security</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Write Feature Tests — at minimum: one test per role (Owner, Editor, Viewer) per sensitive endpoint. Use <code>php artisan test --coverage</code></div></div><div class="item-badge"><span class="ib ib-imp">important</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-icon">⏰</div>
+        <div class="section-name">Scheduled Commands (Cron)</div>
+        <div class="section-tag st-r">app/Console/Kernel.php</div>
+      </div>
+      <div class="items">
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Daily: expire pending invitations — <code>project_invitations</code> where <code>expires_at &lt; now()</code> → set <code>status = expired</code></div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Monthly: reset scan counters — not needed if counting from <code>scan_jobs</code> by month, but send "quota reset" notification to users</div></div><div class="item-badge"><span class="ib ib-opt">optional</span></div></div>
+        <div class="item" onclick="toggle(this)"><div class="item-cb"><div class="cb-box">✓</div></div><div class="item-content"><div class="item-text">Add <code>* * * * * php artisan schedule:run</code> to server crontab</div></div><div class="item-badge"><span class="ib ib-req">required</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="sep">
+
+<footer>
+  <span>CYBERGUARD</span> &nbsp;·&nbsp; BACKEND CHECKLIST &nbsp;·&nbsp; LARAVEL 12 + DOCKER + REDIS &nbsp;·&nbsp; 2025
+</footer>
+
+<script>
+// ── TOGGLE ITEM ──────────────────────────────────────────
+function toggle(el) {
+  el.classList.toggle('done');
+  saveState();
+  updateProgress();
+}
+
+// ── TOGGLE PHASE COLLAPSE ────────────────────────────────
+function togglePhase(header) {
+  const phaseEl = header.parentElement;
+  const body    = phaseEl.querySelector('.phase-body');
+  const arrow   = header.querySelector('.phase-toggle');
+  body.classList.toggle('collapsed');
+  arrow.classList.toggle('open');
+}
+
+// ── PROGRESS ─────────────────────────────────────────────
+function updateProgress() {
+  const all  = document.querySelectorAll('.item');
+  const done = document.querySelectorAll('.item.done');
+  const pct  = all.length ? Math.round((done.length / all.length) * 100) : 0;
+
+  document.getElementById('pb-fill').style.width  = pct + '%';
+  document.getElementById('pb-done').textContent  = done.length;
+  document.getElementById('pb-total').textContent = all.length;
+
+  // per-phase counts
+  document.querySelectorAll('.phase').forEach(phase => {
+    const id       = phase.id;
+    const phItems  = phase.querySelectorAll('.item');
+    const phDone   = phase.querySelectorAll('.item.done');
+    const countEl  = document.getElementById('count-' + id);
+    if (countEl) {
+      countEl.innerHTML = `<span>${phDone.length}</span>/${phItems.length}`;
+      const phPct = phItems.length ? phDone.length / phItems.length : 0;
+      countEl.style.borderColor = phPct === 1
+        ? 'rgba(0,255,157,.4)'
+        : phPct > 0
+        ? 'rgba(0,212,255,.25)'
+        : 'var(--border)';
+      if (phPct === 1) {
+        countEl.querySelector('span').style.color = 'var(--green)';
+      }
+    }
+  });
+}
+
+// ── PERSIST STATE ─────────────────────────────────────────
+function saveState() {
+  const state = {};
+  document.querySelectorAll('.item').forEach((el, i) => {
+    state[i] = el.classList.contains('done');
+  });
+  try { localStorage.setItem('cg-checklist', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('cg-checklist') || '{}');
+    document.querySelectorAll('.item').forEach((el, i) => {
+      if (state[i]) el.classList.add('done');
+    });
+  } catch(e) {}
+}
+
+function resetAll() {
+  if (!confirm('Reset all checkboxes?')) return;
+  document.querySelectorAll('.item.done').forEach(el => el.classList.remove('done'));
+  saveState(); updateProgress();
+}
+
+// ── NAV ACTIVE ON SCROLL ──────────────────────────────────
+const navLinks = document.querySelectorAll('.nav-a');
+const phases   = document.querySelectorAll('.phase');
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id.replace('phase-', '');
+      navLinks.forEach(l => {
+        l.classList.toggle('on', l.getAttribute('href') === `#phase-${id}`);
+      });
+    }
+  });
+}, { rootMargin: '-35% 0px -60% 0px' });
+
+phases.forEach(p => obs.observe(p));
+
+// ── INIT ──────────────────────────────────────────────────
+loadState();
+updateProgress();
+</script>
+</body>
+</html>
