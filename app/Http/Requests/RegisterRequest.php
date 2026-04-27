@@ -47,13 +47,13 @@ class RegisterRequest extends FormRequest
             'full_name.required'  => "The name field is required.",
             'full_name.min'       => "The name must be at least 3 characters.",
             'full_name.max'       => "The name may not be greater than 255 characters.",
-            'job_title.required'  => "The job title field is required.",
-            'job_title.min'       => "The job title must be at least 3 characters.",
-            'job_title.max'       => "The job title may not be greater than 255 characters.",
-            'job_title.string'    => "The job title must be a string.",
-            'avatar.image'       => "The image must be an image.",
-            'avatar.mimes'       => "The image must be a file of type: jpeg, jpg, png, gif.",
-            'avatar.max'         => "The image may not be greater than 2MB.",
+            'job_tittle.required' => "The job tittle field is required.",
+            'job_tittle.min'      => "The job title must be at least 3 characters.",
+            'job_tittle.max'      => "The job title may not be greater than 255 characters.",
+            'job_tittle.string'   => "The job tittle must be a string.",
+            'avatar.image'        => "The image must be an image.",
+            'avatar.mimes'        => "The image must be a file of type: jpeg, jpg, png, gif.",
+            'avatar.max'          => "The image may not be greater than 2048KB.",
 
         ];
     }

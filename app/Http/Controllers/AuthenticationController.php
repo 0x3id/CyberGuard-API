@@ -28,8 +28,9 @@ class AuthenticationController extends Controller
             $user = User::query()->create([
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
+                'job_tittle' => $validated['job_tittle'],
                 'full_name' => $validated['full_name'],
-                'job_tittle' => $validated['job_tittle']
+                'ip_address' => $request->ip(),
             ]);
 
             if($user)

@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Jobs\SendPasswordResetEmail;
 
 class PasswordResetController extends Controller
 {
@@ -20,19 +20,12 @@ class PasswordResetController extends Controller
             'email' => 'required|email|exists:users,email',
         ]);
 
-        $status = Password::sendResetLink($request->only('email'));
-
-        if ($status != Password::RESET_LINK_SENT) {
-            return response()->json([
-                'status' => 'error',
-                'message' => __($status)
-            ], 500);
-        }
+        SendPasswordResetEmail::dispatch($request->email);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Password reset link sent to your email.'
-        ], 200);
+            'message' => 'Password reset request queued. Please check your email shortly.'
+        ], 202);
     }
 
     /**

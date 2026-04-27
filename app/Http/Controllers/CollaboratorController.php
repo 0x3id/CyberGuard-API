@@ -37,13 +37,12 @@ class CollaboratorController extends Controller
         // 3. Validate Data
         $validated = $request->validate([
             'email' => 'nullable|email',
-            // email مش required لأن ممكن يبعت Link بدون Email
             'role'  => 'required|in:editor,viewer',
         ]);
 
         // 4. Create Secret Token
         // Str::random(40) Random Token of 40 char
-        $token = Str::random(40);
+        $token = Str::random(64);
 
         // 5. Store Invitation In Database
         $invitation = ProjectInvitation::create([
@@ -75,7 +74,7 @@ class CollaboratorController extends Controller
 
     // ────────────────────────────────────────────
     // GET /api/invitations/{token}
-    // شوف تفاصيل الدعوة قبل ما تقبل
+    // Show Invitation Details
     // ────────────────────────────────────────────
     public function showInvitation(string $token): JsonResponse
     {
@@ -91,12 +90,15 @@ class CollaboratorController extends Controller
                 'message' => 'Invitation not found or expired',
             ], 404);
         }
-
+        $invited_by = User::find($invitation->invited_by);
         return response()->json([
             'invitation' => [
                 'project_name' => $invitation->project->name,
                 'role'         => $invitation->role,
                 'expires_at'   => $invitation->expires_at,
+                'invited_by'   => $invited_by->full_name,
+                'job_tittle'   => $invited_by->job_tittle,
+                'avatar_url'   => $invited_by->avatar_url,
             ],
         ]);
     }
@@ -149,25 +151,47 @@ class CollaboratorController extends Controller
         ]);
     }
 
+
     // ────────────────────────────────────────────
+    // PATCH /api/projects/{project_id}/collaborators/{user_id}
+    // Change User Role
+    // ────────────────────────────────────────────
+    public function changeRole(Request $request, Project $project, User $user): JsonResponse {
+        $currentUser = $request->user();
+
+        // 1. Only Owner can change role
+        if ($project->getUserRole($currentUser->id) !== 'owner') {
+            return response()->json(['message' => 'Only the owner can change role'], 403);
+        }
+
+        // 2. Change User Role
+        $project->collaborators()->updateExistingPivot($user->id, ['role' => $request->role]);
+
+        return response()->json([
+            'message' => 'Role changed successfully',
+        ], 200);
+    }
+
+
+    //_____________________________________________
     // DELETE /api/projects/{project}/collaborators/{user}
     // Delete Person From Project
-    // ────────────────────────────────────────────
+    //_____________________________________________
     public function remove(Request $request, Project $project, User $user): JsonResponse {
         $currentUser = $request->user();
 
-        // 1. بس الـ Owner يقدر يشيل
+        // 1. Only Owner can remove members
         if ($project->getUserRole($currentUser->id) !== 'owner') {
             return response()->json(['message' => 'Only the owner can remove members'], 403);
         }
 
-        // 2. الـ Owner مينفعش يشيل نفسه
+        // 2. Owner cannot remove themselves
         if ($user->id === $currentUser->id) {
             return response()->json(['message' => 'You cannot remove yourself'], 400);
         }
 
-        // 3. شيل الـ User من المشروع
-        // detach بيحذف السطر من جدول project_collaborators
+        // 3. Remove User From Project
+        // detach will delete the row from project_collaborators table
         $project->collaborators()->detach($user->id);
 
         return response()->json([

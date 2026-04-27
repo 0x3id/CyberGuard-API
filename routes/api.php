@@ -98,6 +98,13 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('projects/{project}/invite' , [CollaboratorController::class, 'invite']);
     // Accept Invitation
     Route::post('invitations/{token}/accept' , [CollaboratorController::class, 'accept']);
+    // Show Invitation Details
+    Route::get('invitations/{token}', [CollaboratorController::class, 'showInvitation']);
+    // Remove User From Project
+    Route::delete('projects/{project}/collaborators/{user}', [CollaboratorController::class, 'remove']);
+    // Change User Role
+    Route::patch('projects/{project}/collaborators/{user}', [CollaboratorController::class, 'changeRole']);
+
 
     Route::post('/scan/start', [ScanController::class, 'startScan']);
     Route::get('/scan/{scanJobId}/status', [ScanController::class, 'getScanStatus']);

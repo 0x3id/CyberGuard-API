@@ -22,10 +22,10 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasApiTokens, HasUuids, SoftDeletes, Notifiable;
 
     protected $fillable = [
-        'name',
         'full_name',
         'email',
         'password',
+        'job_tittle',
         'avatar_url',
         'two_factor_enabled',
         'failed_login_attempts',
