@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\ForceJsonResponse;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,9 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //Middleware To Force Response JSON
         $middleware->prependToGroup('api', [
-           ForceJsonResponse::class
+            ForceJsonResponse::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (ModelNotFoundException $e, $request) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Resource not found'
+            ], 404);
+        });
     })->create();

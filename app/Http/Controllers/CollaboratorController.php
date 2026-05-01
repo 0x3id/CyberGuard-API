@@ -11,152 +11,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
+use App\Models\AuditLog;
 
 class CollaboratorController extends Controller
 {
-    // ────────────────────────────────────────────
-    // POST /api/projects/{project}/invite
-    // Invite Person
-    // ────────────────────────────────────────────
-    public function invite(Request $request, Project $project): JsonResponse
-    {
-        $user = $request->user();
-
-        // 1. Owner Only can send
-        if ($project->getUserRole($user->id) !== 'owner') {
-            return response()->json(['status' => 'Error' ,'message' => 'Only the owner can invite'], 403);
-        }
-
-        // 2. Check of limit
-        // if (!$project->canAddCollaborator()) {
-        //     return response()->json([
-        //         'message' => 'Collaborator limit reached. Upgrade your plan.',
-        //     ], 403);
-        // }
-
-        // 3. Validate Data
-        $validated = $request->validate([
-            'email' => 'nullable|email',
-            'role'  => 'required|in:editor,viewer',
-        ]);
-
-        // 4. Create Secret Token
-        // Str::random(40) Random Token of 40 char
-        $token = Str::random(64);
-
-        // 5. Store Invitation In Database
-        $invitation = ProjectInvitation::create([
-            'project_id' => $project->id,
-            'invited_by' => $user->id,
-            'email'      => $validated['email'] ?? null,
-            'token'      => $token,
-            'role'       => $validated['role'],
-            'status'     => 'pending',
-            'expires_at' => now()->addDays(7), // Expire in 7 days
-        ]);
-
-        // 6. لو في Email → ابعت إيميل
-        // if ($validated['email'] ?? null) {
-        //     // هنا بتبعت الإيميل
-        //     // Mail::to($validated['email'])->send(new ProjectInvitationMail($invitation));
-        // }
-
-        // 7. Return Link To User
-        $inviteLink = env('FRONTEND_URL') . 'invite/' . $token;
-
-        return response()->json([
-            'status' => 'Success',
-            'message'     => 'Invitation created',
-            'invite_link' => $inviteLink,
-            'expires_at'  => $invitation->expires_at,
-        ], 201);
-    }
-
-    // ────────────────────────────────────────────
-    // GET /api/invitations/{token}
-    // Show Invitation Details
-    // ────────────────────────────────────────────
-    public function showInvitation(string $token): JsonResponse
-    {
-        // جيب الدعوة من الـ Token
-        $invitation = ProjectInvitation::where('token', $token)
-                                        ->where('status', 'pending')
-                                        ->where('expires_at', '>', now())
-                                        ->with('project') // جيب بيانات المشروع معاها
-                                        ->first();
-
-        if (!$invitation) {
-            return response()->json([
-                'message' => 'Invitation not found or expired',
-            ], 404);
-        }
-        $invited_by = User::find($invitation->invited_by);
-        return response()->json([
-            'invitation' => [
-                'project_name' => $invitation->project->name,
-                'role'         => $invitation->role,
-                'expires_at'   => $invitation->expires_at,
-                'invited_by'   => $invited_by->full_name,
-                'job_tittle'   => $invited_by->job_tittle,
-                'avatar_url'   => $invited_by->avatar_url,
-            ],
-        ]);
-    }
-
-    // ────────────────────────────────────────────
-    // POST /api/invitations/{token}/accept
-    // Accept Invitation
-    // ────────────────────────────────────────────
-    public function accept(Request $request, string $token): JsonResponse
-    {
-        $user = $request->user();
-
-        // 1. Get Invitation
-        $invitation = ProjectInvitation::where('token', $token)
-                                        ->where('status', 'pending')
-                                        ->where('expires_at', '>', now())
-                                        ->first();
-
-        if (!$invitation) {
-            return response()->json(['message' => 'Invalid or expired invitation'], 404);
-        }
-
-        // 2. User Is Exist in project or no??
-        $alreadyMember = $invitation->project
-                                    ->collaborators()
-                                    ->where('user_id', $user->id)
-                                    ->exists();
-
-        if ($alreadyMember) {
-            return response()->json(['message' => 'You are already a member'], 409);
-            // 409 = Conflict
-        }
-
-        // 3. Add User To Project
-        $invitation->project->collaborators()->attach($user->id, [
-            'id' => Str::uuid(),
-            'role'        => $invitation->role,
-            'status'      => 'accepted',
-            'invited_by'  => $invitation->invited_by,
-            'invited_at'  => $invitation->created_at,
-            'accepted_at' => now(),
-        ]);
-
-        // 4. Change status accepted
-        $invitation->update(['status' => 'accepted']);
-
-        return response()->json([
-            'message' => 'You joined the project successfully',
-            'project' => $invitation->project,
-        ]);
-    }
 
 
     // ────────────────────────────────────────────
-    // PATCH /api/projects/{project_id}/collaborators/{user_id}
+    // PATCH /api/projects/{project}/collaborators/{user}
     // Change User Role
     // ────────────────────────────────────────────
-    public function changeRole(Request $request, Project $project, User $user): JsonResponse {
+    public function changeRole(Request $request, Project $project, User $user) : JsonResponse {
         $currentUser = $request->user();
 
         // 1. Only Owner can change role
@@ -167,9 +32,40 @@ class CollaboratorController extends Controller
         // 2. Change User Role
         $project->collaborators()->updateExistingPivot($user->id, ['role' => $request->role]);
 
+        AuditLog::create([
+            'user_id'     => $currentUser->id,
+            'action'      => 'collaborator.changeRole',
+            'entity_type' => ProjectCollaborator::class,
+            'entity_id'   => $user->id,
+            'ip_address'  => $request->ip(),
+            'created_at'  => now(),
+        ]);
+
+
         return response()->json([
             'message' => 'Role changed successfully',
         ], 200);
+    }
+
+    public function getAll(Request $request, Project $project): JsonResponse
+    {
+        $currentUser = $request->user();
+
+        // 1. Check if user have access in this project
+        if (!$project->hasAccess($request->user()->id)) {
+            return response()->json(['status'=>'Error','message' => 'Unauthorized'], 403);
+        }
+
+
+        $collaborators = ProjectCollaborator::where('project_id', $project->id)
+            ->with(['user:id,full_name,email'])
+            ->orderBy('created_at')
+            ->get();
+
+        return response()->json([
+            'status' => 'Success',
+            'collaborators' => $collaborators,
+        ]);
     }
 
 

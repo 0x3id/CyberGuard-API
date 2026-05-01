@@ -11,24 +11,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\ProjectInvitationController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\TargetController;
+use App\Models\ProjectInvitation;
 
-/**
- * Authentication Route
- */
+
 Route::prefix('auth')->group(function() {
-    // - Register Route
+    // ── Authentication Route ─────────────────
+    // 1. Register Route
     Route::post('/register', [AuthenticationController::class, 'register']);
-    // - Login Route
+    // 2. Login Route
     Route::post('/login', [AuthenticationController::class, 'login']);
-    // - Logout Route
+    // 3. Logout Route
     Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 
-    // - Forgot Password
+    // 4. Forgot Password
     Route::post('/forgot-password', [PasswordResetController::class, 'forgot']);
-    // - Reset Password
+    // 5. Reset Password
     Route::post('/reset-password', [PasswordResetController::class, 'reset']);
-    // - password.reset route needed by Laravel reset email
+    // 6. password.reset route needed by Laravel reset email
     Route::get('/password/reset/{token}', function ($token) {
         return response()->json([
             'status' => 'success',
@@ -37,74 +39,73 @@ Route::prefix('auth')->group(function() {
         ]);
     })->name('password.reset');
 
-    // - Get The User Data
+    // 7. Get The User Data
     Route::get('/me', function (Request $request) {
         return response()->json(['user' => $request->user()]);
     })->middleware('auth:sanctum');
 
-    // - Authentication health check
+    // 8. Authentication health check
     Route::get('/status', function (Request $request) {
         return response()->json(['status' => 'success', 'user' => $request->user()]);
     })->middleware('auth:sanctum');
 
-    /**
-     * 2FA Routes
-     */
-    // - Setup 2FA (returns QR code)
+
+    // ── 2FA Routes ─────────────────
+    // 1. Setup 2FA (returns QR code)
     Route::post('/2fa/setup', [TwoFactorAuthController::class, 'setup'])->middleware('auth:sanctum');
-    // - Enable 2FA
+    // 2. Enable 2FA
     Route::post('/2fa/enable', [TwoFactorAuthController::class, 'enable'])->middleware('auth:sanctum');
-    // - Disable 2FA
+    // 3. Disable 2FA
     Route::post('/2fa/disable', [TwoFactorAuthController::class, 'disable'])->middleware('auth:sanctum');
-    // - Verify 2FA code during login
+    // 4. Verify 2FA code during login
     Route::post('/2fa/verify', [TwoFactorAuthController::class, 'verify']);
-    // - Get 2FA status
+    // 5. Get 2FA status
     Route::get('/2fa/status', [TwoFactorAuthController::class, 'status'])->middleware('auth:sanctum');
 });
 
-/**
- * Email Verify Routes 
- */
 Route::prefix('email')->group(function() {
-    // - Send Email Verification
+    // ── Email Verify Routes ─────────────────
+    // 1. Send Email Verification
     Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'sendEmailVerification'])
         ->middleware('signed')->name('verification.verify');
-    // - Resend Email Verification
-    Route::post('/verification-notification/{id}', [EmailVerificationController::class, 'resendEmailVerification'])
-        ->middleware(['throttle:6,1','auth:sanctum'])->name('verification.send');
+    // 2. Resend Email Verification
+    Route::post('/verification-notification/resend', [EmailVerificationController::class, 'resendEmailVerification'])->middleware(['throttle:6,1'])->name('verification.send');
 });
-
-
-// Route::get('/profile/{id}' , function($id) {
-//     $user = User::findOrFail($id);
-//     if($user->hasVerifiedEmail())
-//     {
-//         return response()->json([
-//         'msg' => "Hello in profile"
-//     ]);
-//     }
-//     return response()->json([
-//         'msg' => "Please Verifiy Your Email"
-//     ], 401);
-// })->middleware(['auth:sanctum']);
 
 
 Route::middleware('auth:sanctum')->group(function() {
     // ── Projects Resource ─────────────────
     Route::apiResource('projects', ProjectController::class);
 
-    // ── Collaborators ─────────────────────
+    // ── Invitations ─────────────────────
     // Create Link To Invite User To Project
-    Route::post('projects/{project}/invite' , [CollaboratorController::class, 'invite']);
+    Route::post('projects/{project}/invite' , [ProjectInvitationController::class, 'invite']);
     // Accept Invitation
-    Route::post('invitations/{token}/accept' , [CollaboratorController::class, 'accept']);
+    Route::post('invitations/{token}/accept' , [ProjectInvitationController::class, 'accept']);
     // Show Invitation Details
-    Route::get('invitations/{token}', [CollaboratorController::class, 'showInvitation']);
+    Route::get('invitations/{token}', [ProjectInvitationController::class, 'showInvitation']);
+    // Cancel invitation
+    Route::delete('invitations/{token}/reject' , [ProjectInvitationController::class, 'reject']);
+
+    // ── Collaborators ─────────────────────
     // Remove User From Project
     Route::delete('projects/{project}/collaborators/{user}', [CollaboratorController::class, 'remove']);
     // Change User Role
     Route::patch('projects/{project}/collaborators/{user}', [CollaboratorController::class, 'changeRole']);
+    // List of project collaborators
+    Route::get('/projects/{project}/collaborators', [CollaboratorController::class, 'getAll']);
 
+    // ── Targets ─────────────────────
+    // Add new Target
+    Route::post('projects/{project}/targets', [TargetController::class, 'addNewTarget']);
+    // Get Target Details
+    Route::get('targets/{target}', [TargetController::class, 'getTargetDetails']);
+    // Delete Target
+    Route::delete('projects/{project}/targets/{target}', [TargetController::class, 'deleteTarget']);
+    // Get All Targets Of Project
+    Route::get('projects/{project}/targets', [TargetController::class, 'getAllTargets']);
+    // Update Target
+    Route::patch('projects/{project}/targets/{target}', [TargetController::class, 'updateTarget']);
 
     Route::post('/scan/start', [ScanController::class, 'startScan']);
     Route::get('/scan/{scanJobId}/status', [ScanController::class, 'getScanStatus']);

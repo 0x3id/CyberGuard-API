@@ -116,7 +116,7 @@ class ProjectController extends Controller
     // ────────────────────────────────────────────
     public function show(Request $request, Project $project): JsonResponse
     {
-        // 1. تحقق إن الـ User عنده Access على المشروع ده
+        // 1. Check if user have access in this project
         if (!$project->hasAccess($request->user()->id)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -144,14 +144,13 @@ class ProjectController extends Controller
     // ────────────────────────────────────────────
     public function update(Request $request, Project $project): JsonResponse
     {
-        // بس الـ Owner يقدر يعدل
+        // Owner Only can update project
         if ($project->getUserRole($request->user()->id) !== 'owner') {
             return response()->json(['message' => 'Only the project owner can edit'], 403);
         }
 
         $validated = $request->validate([
             'name'        => 'sometimes|string|max:255',
-            // sometimes → بس لو موجود في الـ Request
             'description' => 'nullable|string',
             'status'      => 'sometimes|in:active,archived,completed',
             'start_date'  => 'nullable|date',
@@ -159,6 +158,17 @@ class ProjectController extends Controller
         ]);
 
         $project->update($validated);
+
+        AuditLog::create([
+            'user_id'     => $request->user()->id,
+            'owner_type'  => User::class,
+            'owner_id'    => $request->user()->id,
+            'action'      => 'project.update',
+            'entity_type' => Project::class,
+            'entity_id'   => $project->id,
+            'ip_address'  => $request->ip(),
+            'created_at'  => now(),
+        ]);
 
         return response()->json([
             'message' => 'Project updated successfully',

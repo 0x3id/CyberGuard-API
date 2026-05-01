@@ -13,7 +13,7 @@ class SendEmailVerifyJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public $user;
+    public User $user;
 
     public function __construct(User $user)
     {
