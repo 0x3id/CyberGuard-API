@@ -76,6 +76,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(UserSubscription::class);
     }
 
+    public function subscriptionBillingOrders(): HasMany
+    {
+        return $this->hasMany(SubscriptionBillingOrder::class);
+    }
+
     // User → ينتمي لـ Organizations كتير (عن طريق organization_members)
     public function organizations(): BelongsToMany
     {

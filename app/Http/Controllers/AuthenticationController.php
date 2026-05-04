@@ -6,6 +6,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Mail\VerifyMail;
 use App\Models\User;
+use App\Models\UserSubscription;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
@@ -33,11 +34,20 @@ class AuthenticationController extends Controller
                 'ip_address' => $request->ip(),
             ]);
 
+            UserSubscription::query()->create([
+                'user_id' => $user->id,
+                'plan' => 'free',
+                'status' => 'active',
+                'max_projects' => env('FREE_MAX_PROJECTS'),
+                'max_targets' => env('FREE_MAX_TARGETS'),
+                'max_scans_per_month' => env('FREE_MAX_SCANS_PER_MONTH'),
+                'started_at' => now(),
+            ]);
+            
             if($user)
             {
                 // Mail::to($validated['email'])->send(new VerifyMail());
                 // $user->sendEmailVerificationNotification();
-
                 SendEmailVerifyJob::dispatch($user);
                 unset($data['data']['password']);
                 unset($data['data']['password_confirmation']);

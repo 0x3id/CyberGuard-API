@@ -14,6 +14,9 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProjectInvitationController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\TargetController;
+use App\Http\Controllers\UserSubscriptionController;
+use App\Http\Controllers\SubscriptionBillingController;
+use App\Http\Controllers\PaymobWebhookController;
 use App\Models\ProjectInvitation;
 
 
@@ -72,8 +75,25 @@ Route::prefix('email')->group(function() {
     Route::post('/verification-notification/resend', [EmailVerificationController::class, 'resendEmailVerification'])->middleware(['throttle:6,1'])->name('verification.send');
 });
 
+// ── Billing Routes ─────────────────
+// 1. Paymob Webhook
+Route::post('billing/paymob/webhook', PaymobWebhookController::class);
+// 2. Paymob Redirect after payment
+Route::get('billing/paymob/redirect', [UserSubscriptionController::class, 'handleRedirect']);
+// 3. Get Plans
+Route::get('/billing/plans', [SubscriptionBillingController::class, 'plans']);
 
 Route::middleware('auth:sanctum')->group(function() {
+    // ── User subscription & Egypt (Paymob) billing ─────────────────
+    // 1. Get Subscription Details
+    Route::get('subscription', [UserSubscriptionController::class, 'show']);
+    // 2. Update Subscription
+    Route::patch('subscription', [UserSubscriptionController::class, 'update']);
+    // 3. Checkout Subscription
+    Route::post('billing/checkout', [SubscriptionBillingController::class, 'checkout']);
+    // 4. Get Billing Orders
+    Route::get('billing/orders', [SubscriptionBillingController::class, 'orders']);
+
     // ── Projects Resource ─────────────────
     Route::apiResource('projects', ProjectController::class);
 
