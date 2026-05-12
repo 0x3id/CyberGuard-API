@@ -5,6 +5,7 @@ use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\TwoFactorAuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\CollaboratorController;
+use App\Http\Controllers\FindingController;
 use App\Models\User;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -127,6 +128,21 @@ Route::middleware('auth:sanctum')->group(function() {
     // Update Target
     Route::patch('projects/{project}/targets/{target}', [TargetController::class, 'updateTarget']);
 
+    // ── Scans ─────────────────────
+    // Get Available Scanners
+    Route::get('/scanners', [ScanController::class, 'getAvailableScanners']);
+    // Start Scan
     Route::post('/scan/start', [ScanController::class, 'startScan']);
+    // Get Scan Status
     Route::get('/scan/{scanJobId}/status', [ScanController::class, 'getScanStatus']);
+    // Get Scan Findings
+    Route::get('/scan/{scanJobId}/findings', [ScanController::class, 'fetchFindings']);
+
+    // ── Findings ───────────────────
+    // Get All Findings of target
+    Route::get('targets/{target}/findings', [FindingController::class, 'index']);
+    // Update Finding Status
+    Route::patch('findings/{finding}/status', [FindingController::class, 'updateStatus']);
+    Route::get('targets/{target}/endpoints', [FindingController::class, 'getEndpoints']);
+
 });

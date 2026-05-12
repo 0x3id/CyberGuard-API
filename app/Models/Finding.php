@@ -14,6 +14,7 @@ class Finding extends Model
     protected $fillable = [
         'scan_job_id',
         'target_id',
+        'driver_id',
         'title',
         'description',
         'severity',
@@ -24,10 +25,15 @@ class Finding extends Model
         'status',
         'affected_url',
         'proof',
+        'metadata',
+        'tags',
+        'raw_data',
     ];
 
     protected $casts = [
         'cvss_score' => 'decimal:1',
+        'metadata' => 'array',
+        'tags' => 'array',
     ];
 
     public function scanJob(): BelongsTo

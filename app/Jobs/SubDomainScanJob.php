@@ -37,14 +37,14 @@ class SubDomainScanJob implements ShouldQueue
         if($result->successful())
         {
             $output = $result->output();
-            // Finding::create([
-            //                 'scan_job_id' => "1",
-            //                 'target_id' => "2",
-            //                 'title' => 'Subdomain Found',
-            //                 'description' => "$output",
-            //                 'severity' => 'info',
-            //                 'status' => 'open',
-            //             ]);
+            Finding::create([
+                            'scan_job_id' => "fc9838ec-4877-11f1-a480-00155d17da53",
+                            'target_id' => "019dd1c6-2071-7269-b63e-863458a86901",
+                            'title' => 'Subdomain Found',
+                            'description' => "$output",
+                            'severity' => 'info',
+                            'status' => 'open',
+                        ]);
         }
         else
         {
