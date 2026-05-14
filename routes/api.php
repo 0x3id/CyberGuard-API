@@ -73,7 +73,8 @@ Route::prefix('email')->group(function() {
     Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'sendEmailVerification'])
         ->middleware('signed')->name('verification.verify');
     // 2. Resend Email Verification
-    Route::post('/verification-notification/resend', [EmailVerificationController::class, 'resendEmailVerification'])->middleware(['throttle:6,1'])->name('verification.send');
+    Route::post('/verification-notification/resend', [EmailVerificationController::class, 'resendEmailVerification'])
+        ->middleware(['throttle:6,1'])->name('verification.send');
 });
 
 // ── Billing Routes ─────────────────

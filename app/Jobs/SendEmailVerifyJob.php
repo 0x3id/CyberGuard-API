@@ -25,6 +25,21 @@ class SendEmailVerifyJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $this->user->sendEmailVerificationNotification();
+        // Build the verification URL for the frontend
+        $frontendUrl = env('FRONTEND_URL', 'https://cyberguard-pro-eta.vercel.app/');
+        $verificationUrl = $this->generateVerificationUrl($this->user, $frontendUrl);
+
+        $this->user->notify(new \App\Notifications\EmailVerificationNotification($verificationUrl));
+    }
+
+    private function generateVerificationUrl($user, $frontendUrl)
+    {
+        $signedUrl = url()->temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->getKey(), 'hash' => sha1($user->getEmailForVerification())]
+        );
+        // Pass the signed URL as a query param to the frontend
+        return rtrim($frontendUrl, '/') . '/verify-email.html?verify_url=' . urlencode($signedUrl);
     }
 }
