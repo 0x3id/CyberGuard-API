@@ -106,7 +106,7 @@ class TargetController extends Controller
         }
 
         // 2. Get all targets
-        $target = Target::all();
+        $target = Target::where('project_id', $project->id)->get();
         return response()->json(['status' => 'Success' ,'targets' => $target], 200);
     }
 
