@@ -6,6 +6,7 @@ use App\Models\ScanJob;
 use App\Models\Target;
 use App\Jobs\ExecuteScanDriverJob;
 use Illuminate\Support\Facades\Log;
+use \App\Models\Finding;
 
 class ScanOrchestrator
 {
@@ -24,6 +25,9 @@ class ScanOrchestrator
             'status' => 'running',
             'started_at' => now(),
         ]);
+
+        $target->last_scanned_at = now();
+        $target->save();
 
         foreach ($driverIds as $driverId) {
             $this->enqueueDriver($scanJob, $target, $driverId, $userFlags[$driverId] ?? []);
@@ -76,7 +80,7 @@ class ScanOrchestrator
     /**
      * Basic expression evaluator for trigger conditions.
      */
-    private function evaluateCondition(string $condition, \App\Models\Finding $finding): bool
+    private function evaluateCondition(string $condition, Finding $finding): bool
     {
         // A very simple regex matcher for "finding.port == 80 || finding.port == 443" style conditions.
         // For a full implementation, you'd use a real expression parser like Symfony ExpressionLanguage.

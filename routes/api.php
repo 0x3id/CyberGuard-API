@@ -130,14 +130,24 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::patch('projects/{project}/targets/{target}', [TargetController::class, 'updateTarget']);
 
     // ── Scans ─────────────────────
-    // Get Available Scanners
+    // 1. Get Available Scanners
     Route::get('/scanners', [ScanController::class, 'getAvailableScanners']);
-    // Start Scan
+    // 2. Start Scan
     Route::post('/scan/start', [ScanController::class, 'startScan']);
-    // Get Scan Status
+    // 3. Get Scan Status
     Route::get('/scan/{scanJobId}/status', [ScanController::class, 'getScanStatus']);
-    // Get Scan Findings
+    // 4. Get Scan Findings
     Route::get('/scan/{scanJobId}/findings', [ScanController::class, 'fetchFindings']);
+    // 5. Get All ScanJobs Of Project
+    Route::get('/projects/{project}/scans', [ScanController::class, 'projectScans']);
+    // 6. Get All ScansJobs Of Target
+    Route::get('/targets/{target}/scans', [ScanController::class, 'targetScans']);
+    // 7. Pause Scan
+    Route::post('/scan/{scanJobId}/pause', [ScanController::class, 'pauseScan']);
+    // 8. Continue Paused Scans
+    Route::post('/scan/{scanJobId}/continue', [ScanController::class, 'continueScan']);
+    // 9. Cancel Scan
+    Route::post('/scan/{scanJobId}/cancel', [ScanController::class, 'cancelScan']);
 
     // ── Findings ───────────────────
     // Get All Findings of target

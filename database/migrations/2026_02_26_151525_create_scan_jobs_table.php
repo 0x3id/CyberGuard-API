@@ -15,25 +15,25 @@ return new class extends Migration
             $table->uuid('id')->primary();
 
             $table->foreignUuid('target_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
+                    ->constrained()
+                    ->cascadeOnDelete();
             $table->foreignUuid('project_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
+                    ->constrained()
+                    ->cascadeOnDelete();
 
             // Who Start scan
             $table->foreignUuid('triggered_by')
-                  ->constrained('users')
-                  ->restrictOnDelete();
+                    ->constrained('users')
+                    ->restrictOnDelete();
 
             // auto
             // targeted
             // web
             $table->enum('scan_type', ['auto', 'targeted', 'web']);
 
-            // pending → running → completed / failed
-            $table->enum('status', ['pending', 'running', 'completed', 'failed'])
-                  ->default('pending');
+            // pending → running → completed / failed / cancelled
+            $table->enum('status', ['pending', 'running', 'completed', 'failed', 'cancelled'])
+                    ->default('pending');
 
             // Docker Container ID
             $table->string('container_id')->nullable();

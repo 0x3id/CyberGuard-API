@@ -48,6 +48,12 @@ class ExecuteScanDriverJob implements ShouldQueue
                 return;
             }
 
+            // if ($this->scanSession->status === 'cancelled') {
+            //     Log::info("Scan job {$this->scanSession->id} is Cancelled . Stop execution.");
+            //     $this->scanSession->update(['status' => 'cancelled', 'finished_at' => now()]);
+            //     return;
+            // }
+
             $driverConfig = config("scanners.drivers.{$this->driverId}");
             if (!$driverConfig) {
                 Log::error("Driver {$this->driverId} config not found.");
@@ -82,9 +88,26 @@ class ExecuteScanDriverJob implements ShouldQueue
             $process->disableOutput();
 
             $buffer = '';
+            $lastDbCheck = time();
 
             // Run process and capture chunked data in real-time
-            $process->run(function ($type, $data) use (&$buffer, $normalizer, $orchestrator) {
+            $process->run(function ($type, $data) use (&$buffer, $normalizer, $orchestrator, $process, &$lastDbCheck) {
+                // Option 1 Pause Logic: Throttle DB checks to every 3 seconds to prevent DB overload
+                if (time() - $lastDbCheck >= 3) {
+                    $this->scanSession->refresh();
+                    if ($this->scanSession->status === 'pending') {
+                        Log::info("Scan job {$this->scanSession->id} was paused by user mid-execution. Terminating process.");
+                        $process->stop(0); // Kill the Docker container
+                        return;
+                    }
+                    if ($this->scanSession->status === 'cancelled') {
+                        Log::info("Scan job {$this->scanSession->id} was cancelled by user mid-execution. Terminating process.");
+                        $process->stop(0);
+                        return;
+                    }
+                    $lastDbCheck = time();
+                }
+
                 $buffer .= $data;
                 
                 // Process stream line by line as chunks arrive
@@ -102,6 +125,13 @@ class ExecuteScanDriverJob implements ShouldQueue
             }
 
             if (!$process->isSuccessful()) {
+                // Check if the process failed because we killed it intentionally for a pause/cancel
+                $this->scanSession->refresh();
+                if (in_array($this->scanSession->status, ['pending', 'cancelled'])) {
+                    // Do not mark as failed, keep the intended status
+                    return;
+                }
+
                 Log::error("Driver {$this->driverId} failed with exit code " . $process->getExitCode());
                 // Stderr is intercepted and streamed live, so we don't have it in memory here.
                 $this->scanSession->update(['status' => 'failed', 'error_log' => 'Process failed with exit code ' . $process->getExitCode(), 'finished_at' => now()]);
