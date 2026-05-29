@@ -174,7 +174,7 @@ class ProjectInvitationController extends Controller
     // DELETE /api/invitations/{token}/reject
     // Accept Invitation
     // ────────────────────────────────────────────
-    public function reject(Request $request, string $token)
+    public function reject(Request $request, string $token): JsonResponse
     {
         $user = $request->user();
 
@@ -224,6 +224,51 @@ class ProjectInvitationController extends Controller
         return response()->json([
             'status' => 'Success',
             'message' => 'You rejected the invitation successfully'
+        ]);
+    }
+
+    // ────────────────────────────────────────────
+    // GET projects/{project}/invitations
+    // Get Pending Invitation Of Project
+    // ────────────────────────────────────────────
+    public function pendingInvitation(Request $request, Project $project): JsonResponse
+    {
+        // 1. Check if user has access to the project
+        $user = $request->user();
+        if (!$project->hasAccess($user->id)) {
+            return response()->json([
+                'status' => 'Error',
+                'message' => 'You do not have access to this project.'
+            ], 403);
+        }
+
+        // 2. Get all pending invitations for the project (not expired)
+        $pendingInvitations = $project->invitations()
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->get();
+
+        // 3. Return invitations with invited_by user info
+        $result = $pendingInvitations->map(function ($invitation) {
+            $invitedBy = User::find($invitation->invited_by);
+            return [
+                'id' => $invitation->id,
+                'role' => $invitation->role,
+                'status' => $invitation->status,
+                'expires_at' => $invitation->expires_at,
+                'invited_by' => [
+                    'id' => $invitedBy?->id,
+                    'full_name' => $invitedBy?->full_name,
+                    'job_tittle' => $invitedBy?->job_tittle,
+                    'avatar_url' => $invitedBy?->avatar_url,
+                ],
+                'created_at' => $invitation->created_at,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'pending_invitations' => $result,
         ]);
     }
 }

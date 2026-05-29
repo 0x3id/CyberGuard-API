@@ -18,22 +18,26 @@ use App\Http\Controllers\TargetController;
 use App\Http\Controllers\UserSubscriptionController;
 use App\Http\Controllers\SubscriptionBillingController;
 use App\Http\Controllers\PaymobWebhookController;
+use App\Http\Controllers\DashboardController;
 use App\Models\ProjectInvitation;
 
-
+// ── Authentication Route ─────────────────
 Route::prefix('auth')->group(function() {
-    // ── Authentication Route ─────────────────
-    // 1. Register Route
-    Route::post('/register', [AuthenticationController::class, 'register']);
-    // 2. Login Route
-    Route::post('/login', [AuthenticationController::class, 'login']);
-    // 3. Logout Route
-    Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
+    Route::controller(AuthenticationController::class)->group(function() {
+        // 1. Register Route
+        Route::post('/register', 'register');
+        // 2. Login Route
+        Route::post('/login', 'login');
+        // 3. Logout Route
+        Route::post('/logout', 'logout')->middleware('auth:sanctum');
+    });
 
-    // 4. Forgot Password
-    Route::post('/forgot-password', [PasswordResetController::class, 'forgot']);
-    // 5. Reset Password
-    Route::post('/reset-password', [PasswordResetController::class, 'reset']);
+    Route::controller(PasswordResetController::class)->group(function() {
+        // 4. Forgot Password
+        Route::post('/forgot-password', 'forgot');
+        // 5. Reset Password
+        Route::post('/reset-password', 'reset');
+    });
     // 6. password.reset route needed by Laravel reset email
     Route::get('/password/reset/{token}', function ($token) {
         return response()->json([
@@ -53,22 +57,24 @@ Route::prefix('auth')->group(function() {
         return response()->json(['status' => 'success', 'user' => $request->user()]);
     })->middleware('auth:sanctum');
 
-
     // ── 2FA Routes ─────────────────
-    // 1. Setup 2FA (returns QR code)
-    Route::post('/2fa/setup', [TwoFactorAuthController::class, 'setup'])->middleware('auth:sanctum');
-    // 2. Enable 2FA
-    Route::post('/2fa/enable', [TwoFactorAuthController::class, 'enable'])->middleware('auth:sanctum');
-    // 3. Disable 2FA
-    Route::post('/2fa/disable', [TwoFactorAuthController::class, 'disable'])->middleware('auth:sanctum');
-    // 4. Verify 2FA code during login
-    Route::post('/2fa/verify', [TwoFactorAuthController::class, 'verify']);
-    // 5. Get 2FA status
-    Route::get('/2fa/status', [TwoFactorAuthController::class, 'status'])->middleware('auth:sanctum');
+    Route::controller(TwoFactorAuthController::class)->group(function() {
+        // 1. Setup 2FA (returns QR code)
+        Route::post('/2fa/setup', 'setup')->middleware('auth:sanctum');
+        // 2. Enable 2FA
+        Route::post('/2fa/enable', 'enable')->middleware('auth:sanctum');
+        // 3. Disable 2FA
+        Route::post('/2fa/disable', 'disable')->middleware('auth:sanctum');
+        // 4. Verify 2FA code during login
+        Route::post('/2fa/verify', 'verify');
+        // 5. Get 2FA status
+        Route::get('/2fa/status', 'status')->middleware('auth:sanctum');
+    });
+
 });
 
+// ── Email Verify Routes ─────────────────
 Route::prefix('email')->group(function() {
-    // ── Email Verify Routes ─────────────────
     // 1. Send Email Verification
     Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'sendEmailVerification'])
         ->middleware('signed')->name('verification.verify');
@@ -86,74 +92,102 @@ Route::get('billing/paymob/redirect', [UserSubscriptionController::class, 'handl
 Route::get('/billing/plans', [SubscriptionBillingController::class, 'plans']);
 
 Route::middleware('auth:sanctum')->group(function() {
-    // ── User subscription & Egypt (Paymob) billing ─────────────────
-    // 1. Get Subscription Details
-    Route::get('subscription', [UserSubscriptionController::class, 'show']);
-    // 2. Update Subscription
-    Route::patch('subscription', [UserSubscriptionController::class, 'update']);
-    // 3. Checkout Subscription
-    Route::post('billing/checkout', [SubscriptionBillingController::class, 'checkout']);
-    // 4. Get Billing Orders
-    Route::get('billing/orders', [SubscriptionBillingController::class, 'orders']);
+    // ── Dashboard ──────────────────────────────────────────────────
+    // Aggregate security metrics for the Risk Management Dashboard
+    Route::get('/dashboard/metrics', [DashboardController::class, 'getMetrics']);
 
     // ── Projects Resource ─────────────────
     Route::apiResource('projects', ProjectController::class);
 
+    // ── User subscription & Egypt (Paymob) billing ─────────────────
+    Route::controller(UserSubscriptionController::class)->group(function() {
+        // 1. Get Subscription Details
+        Route::get('subscription', 'show');
+        // 2. Update Subscription
+        Route::patch('subscription', 'update');
+    });
+    Route::controller(SubscriptionBillingController::class)->group(function() {
+        // 3. Checkout Subscription
+        Route::post('billing/checkout', 'checkout');
+        // 4. Get Billing Orders
+        Route::get('billing/orders', 'orders');
+    });
+
     // ── Invitations ─────────────────────
-    // Create Link To Invite User To Project
-    Route::post('projects/{project}/invite' , [ProjectInvitationController::class, 'invite']);
-    // Accept Invitation
-    Route::post('invitations/{token}/accept' , [ProjectInvitationController::class, 'accept']);
-    // Show Invitation Details
-    Route::get('invitations/{token}', [ProjectInvitationController::class, 'showInvitation']);
-    // Cancel invitation
-    Route::delete('invitations/{token}/reject' , [ProjectInvitationController::class, 'reject']);
+    Route::controller(ProjectInvitationController::class)->group(function() {
+        // 1. Create Link To Invite User To Project
+        Route::post('projects/{project}/invite', 'invite');
+        // 2. Accept Invitation
+        Route::post('invitations/{token}/accept', 'accept');
+        // 3. Show Invitation Details
+        Route::get('invitations/{token}', 'showInvitation');
+        // 4. Cancel invitation
+        Route::delete('invitations/{token}/reject', 'reject');
+        // 5. Get All Invitations Of Project
+        Route::get('projects/{project}/invitations/pending', 'pendingInvitation');
+    });
 
     // ── Collaborators ─────────────────────
-    // Remove User From Project
-    Route::delete('projects/{project}/collaborators/{user}', [CollaboratorController::class, 'remove']);
-    // Change User Role
-    Route::patch('projects/{project}/collaborators/{user}', [CollaboratorController::class, 'changeRole']);
-    // List of project collaborators
-    Route::get('/projects/{project}/collaborators', [CollaboratorController::class, 'getAll']);
+    Route::controller(CollaboratorController::class)->group(function() {
+        // Remove User From Project
+        Route::delete('projects/{project}/collaborators/{user}', 'remove');
+        // Change User Role
+        Route::patch('projects/{project}/collaborators/{user}', 'changeRole');
+        // List of project collaborators
+        Route::get('/projects/{project}/collaborators', 'getAll');
+    });
 
     // ── Targets ─────────────────────
-    // Add new Target
-    Route::post('projects/{project}/targets', [TargetController::class, 'addNewTarget']);
-    // Get Target Details
-    Route::get('targets/{target}', [TargetController::class, 'getTargetDetails']);
-    // Delete Target
-    Route::delete('projects/{project}/targets/{target}', [TargetController::class, 'deleteTarget']);
-    // Get All Targets Of Project
-    Route::get('projects/{project}/targets', [TargetController::class, 'getAllTargets']);
-    // Update Target
-    Route::patch('projects/{project}/targets/{target}', [TargetController::class, 'updateTarget']);
+    Route::controller(TargetController::class)->group(function() {
+        // 1. Add new Target
+        Route::post('projects/{project}/targets', 'addNewTarget');
+        // 2. Get Target Details
+        Route::get('targets/{target}', 'getTargetDetails');
+        // 3. Delete Target
+        Route::delete('projects/{project}/targets/{target}', 'deleteTarget');
+        // 4. Get All Targets Of Project
+        Route::get('projects/{project}/targets', 'getAllTargets');
+        // 5. Get All Target That user have access to scan on it
+        Route::get('/targets', 'allTargets');
+        // 6. Update Target
+        Route::patch('projects/{project}/targets/{target}', 'updateTarget');
+    });
 
     // ── Scans ─────────────────────
-    // 1. Get Available Scanners
-    Route::get('/scanners', [ScanController::class, 'getAvailableScanners']);
-    // 2. Start Scan
-    Route::post('/scan/start', [ScanController::class, 'startScan']);
-    // 3. Get Scan Status
-    Route::get('/scan/{scanJobId}/status', [ScanController::class, 'getScanStatus']);
-    // 4. Get Scan Findings
-    Route::get('/scan/{scanJobId}/findings', [ScanController::class, 'fetchFindings']);
-    // 5. Get All ScanJobs Of Project
-    Route::get('/projects/{project}/scans', [ScanController::class, 'projectScans']);
-    // 6. Get All ScansJobs Of Target
-    Route::get('/targets/{target}/scans', [ScanController::class, 'targetScans']);
-    // 7. Pause Scan
-    Route::post('/scan/{scanJobId}/pause', [ScanController::class, 'pauseScan']);
-    // 8. Continue Paused Scans
-    Route::post('/scan/{scanJobId}/continue', [ScanController::class, 'continueScan']);
-    // 9. Cancel Scan
-    Route::post('/scan/{scanJobId}/cancel', [ScanController::class, 'cancelScan']);
+    Route::controller(ScanController::class)->group(function() {
+        // 1. Get Available Scanners
+        Route::get('/scanners', [ScanController::class, 'getAvailableScanners']);
+        // 2. Start Scan
+        Route::post('/scan/start', [ScanController::class, 'startScan']);
+        // 3. Get Scan Status
+        Route::get('/scan/{scanJobId}/status', [ScanController::class, 'getScanStatus']);
+        // 4. Get Scan Findings
+        Route::get('/scan/{scanJobId}/findings', [ScanController::class, 'fetchFindings']);
+        // 5. Get All ScanJobs Of Project
+        Route::get('/projects/{project}/scans', [ScanController::class, 'projectScans']);
+        // 6. Get All ScansJobs Of Target
+        Route::get('/targets/{target}/scans', [ScanController::class, 'targetScans']);
+        // 7. Pause Scan
+        Route::post('/scan/{scanJobId}/pause', [ScanController::class, 'pauseScan']);
+        // 8. Continue Paused Scans
+        Route::post('/scan/{scanJobId}/continue', [ScanController::class, 'continueScan']);
+        // 9. Cancel Scan
+        Route::post('/scan/{scanJobId}/cancel', [ScanController::class, 'cancelScan']);
+    });
 
     // ── Findings ───────────────────
-    // Get All Findings of target
-    Route::get('targets/{target}/findings', [FindingController::class, 'index']);
-    // Update Finding Status
-    Route::patch('findings/{finding}/status', [FindingController::class, 'updateStatus']);
-    Route::get('targets/{target}/endpoints', [FindingController::class, 'getEndpoints']);
+    Route::controller(FindingController::class)->group(function() {
+        // 1. Get All Findings of target
+        Route::get('/targets/{target}/findings', 'index');
+        // 2. Get All Findings of project
+        Route::get('/projects/{project}/findings', 'getProjectFindings');
+        // 3. Update Finding Status
+        Route::patch('/findings/{finding}/status', 'updateStatus');
+        // 4. Update Finding Severity
+        Route::patch('/findings/{finding}/severity', 'updateSeverity');
+        // 5. Upload New Findings
+        Route::post('/targets/{target}/findings', 'uploadFinding');
+        Route::get('targets/{target}/endpoints', 'getEndpoints');
+    });
 
 });

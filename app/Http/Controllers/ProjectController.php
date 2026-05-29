@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Models\Target;
+use App\Models\Finding;
 use App\Models\ProjectCollaborator;
 use App\Models\AuditLog;
 use App\Models\User;
@@ -34,6 +36,14 @@ class ProjectController extends Controller
                                 ->withCount('targets')
                                 ->latest()
                                 ->get();
+
+        foreach($ownedProjects as $ownedProject):
+            $this->calcRiskScore($ownedProject);
+        endforeach;
+        foreach($collaboratingProjects as $collaboratingProject):
+            $this->calcRiskScore($collaboratingProject);
+        endforeach;
+
 
         return response()->json([
             'owned'         => $ownedProjects,
@@ -97,7 +107,7 @@ class ProjectController extends Controller
             'user_id'     => $user->id,
             'owner_type'  => User::class,
             'owner_id'    => $user->id,
-            'action'      => 'project.created',
+            'action'      => 'user.added',
             'entity_type' => Project::class,
             'entity_id'   => $project->id,
             'ip_address'  => $request->ip(),
@@ -200,5 +210,46 @@ class ProjectController extends Controller
         ]);
 
         return response()->json(['message' => 'Project deleted successfully']);
+    }
+
+    /**
+     * Calc Risk Score Of Project based on formula
+     * Score = (Critical * 10 + high * 7 + medium * 4 + low * 1) / 100
+     */
+    private function calcRiskScore(Project $project): void
+    {
+        // Get all target ids inside project
+        $targetIds = Target::where('project_id', $project->id)
+            ->pluck('id');
+
+        // Get all findings for these targets
+        $findings = Finding::whereIn('target_id', $targetIds)->get();
+
+        if ($findings->isEmpty()) {
+            $project->risk_score = 0.0;
+            $project->save();
+
+            return;
+        }
+
+        $critical = $findings->where('severity', 'critical')->count();
+        $high     = $findings->where('severity', 'high')->count();
+        $medium   = $findings->where('severity', 'medium')->count();
+        $low      = $findings->where('severity', 'low')->count();
+
+        // Calculate score
+        $riskScore =
+            (($critical * 10) +
+            ($high * 7) +
+            ($medium * 4) +
+            ($low * 1));
+
+        
+
+        $riskScore = ($riskScore /  100);
+
+        // Save to project
+        $project->risk_score = round($riskScore, 2);
+        $project->save();
     }
 }

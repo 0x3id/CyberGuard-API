@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+
 
 class Project extends Model
 {
@@ -92,6 +94,18 @@ class Project extends Model
                         ->first();
 
         return $collab?->pivot->role;
+    }
+
+    public function findings(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Finding::class, // The final model you want to fetch
+            Target::class,  // The intermediate model it goes through
+            'project_id',   // Foreign key on the targets table
+            'target_id',    // Foreign key on the findings table
+            'id',           // Local key on the projects table
+            'id'            // Local key on the targets table
+        );
     }
 
     public function canAddCollaborator(): bool

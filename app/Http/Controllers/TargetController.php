@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Target;
 use App\Models\ProjectCollaborator;
 use App\Models\AuditLog;
+use App\Models\Finding;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
@@ -49,16 +50,18 @@ class TargetController extends Controller
         // 4. Create Target In Database
         $target = Target::create([
             'project_id' => $project->id,
-            'type'       => $request->type,
-            'value'      => $request->value,
-            'label'      => $request->label,
+            'type'       => $validated['type'],
+            'value'      => $validated['value'],
+            'label'      => $validated['label'],
             'is_verified' => true,
             'risk_score' => 0.00
         ]);
 
         AuditLog::create([
             'user_id'     => $user->id,
-            'action'      => 'target.add',
+            'owner_type'  => User::class,
+            'owner_id'    => $user->id,
+            'action'      => 'target.create',
             'entity_type' => Target::class,
             'entity_id'   => $target->id,
             'ip_address'  => $request->ip(),
@@ -66,7 +69,7 @@ class TargetController extends Controller
         ]);
 
         return response()->json([
-            'status'      => 'Success',
+            'status'      => 'success',
             'message'     => 'Target added successfuly',
             'target'      => $target,
         ], 201);
@@ -76,21 +79,47 @@ class TargetController extends Controller
     // GET /api/targets/{target}
     // Get Target Details
     // ────────────────────────────────────────────
-    public function getTargetDetails(Target $target) : JsonResponse
+    public function getTargetDetails(Request $request, Target $target) : JsonResponse
     {
-        try {
-            $target = Target::where('id' , $target->id)->firstOrFail();
-            return response()->json(['target' => $target]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['status' => 'Error' ,'message' => 'Target not found'], 404);
+        $project = Project::findOrFail($target->project_id);
+        $user = $request->user();
+
+        // 1. Check If User Have Access On Project
+        if (!$project->hasAccess($user->id)) {
+            return response()->json(['status' => 'error' ,'message' => 'Unauthorized'], 403);
         }
-        AuditLog::create([
-            'user_id'     => $user->id,
-            'action'      => 'target.detail',
-            'entity_type' => Target::class,
-            'entity_id'   => $target->id,
-            'ip_address'  => $request->ip(),
-            'created_at'  => now(),
+
+        $this->calcRiskScore($target);
+        return response()->json(['status' => 'success' ,'target' => $target]);
+
+    }
+
+    // ────────────────────────────────────────────
+    // Get /api/targets
+    // Get all targets of user
+    // ────────────────────────────────────────────
+    public function allTargets(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $targets = Target::whereHas('project', function ($query) use ($user) {
+            // Owner
+            $query->where('owner_id', $user->id)
+                // Or collaborator/editor
+                ->orWhereHas('collaborators', function ($q) use ($user) {
+                    $q->where('user_id', $user->id)
+                    ->where('role', 'editor');
+                });
+        })->get();
+
+        // Calc Risk Score Of All Targets
+        foreach($targets as $target):
+            $this->calcRiskScore($target);
+        endforeach;
+
+        return response()->json([
+            'status' => 'Success',
+            'targets' => $targets
         ]);
     }
 
@@ -205,5 +234,27 @@ class TargetController extends Controller
         ]);
 
         return response()->json(['status' => 'Success' ,'message' => 'Target deleted successfuly'], 200);
+    }
+
+    /**
+     * Calc Risk Score Of Target based on formula
+     * Score = (Critical * 10 + high * 7 + medium * 4 + low * 1) / 100
+     */
+    public function calcRiskScore(Target $target) : void
+    {
+        $findings = Finding::where('target_id' , $target->id)->get();
+        if (!$findings) return ;
+
+        $critical = $findings->where('severity' , 'critical')->count();
+        $high = $findings->where('severity' , 'high')->count();
+        $medium = $findings->where('severity' , 'medium')->count();
+        $low = $findings->where('severity' , 'low')->count();
+
+        $riskScore = (($critical*10) + ($high*7) + ($medium*4) + ($low*1)) / 100;
+
+        $target->risk_score = $riskScore;
+        $target->save();
+
+        return;
     }
 }
