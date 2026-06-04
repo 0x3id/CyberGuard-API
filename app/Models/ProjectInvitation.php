@@ -17,6 +17,7 @@ class ProjectInvitation extends Model
         'email',
         'status',
         'token',
+        'role',
         'expires_at',
     ];
 

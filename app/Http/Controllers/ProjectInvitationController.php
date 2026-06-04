@@ -38,11 +38,10 @@ class ProjectInvitationController extends Controller
         // 3. Validate Data
         $validated = $request->validate([
             'email' => 'nullable|email',
-            'role'  => 'required|in:editor,viewer',
+            'role'  => 'required|in:editor,viewer'
         ]);
 
         // 4. Create Secret Token
-        // Str::random(40) Random Token of 40 char
         $token = Str::random(64);
 
         // 5. Store Invitation In Database
@@ -250,12 +249,14 @@ class ProjectInvitationController extends Controller
 
         // 3. Return invitations with invited_by user info
         $result = $pendingInvitations->map(function ($invitation) {
+            $invitationLink = env('FRONTEND_URL') . 'invite/' . $invitation->token;
             $invitedBy = User::find($invitation->invited_by);
             return [
                 'id' => $invitation->id,
                 'role' => $invitation->role,
                 'status' => $invitation->status,
                 'expires_at' => $invitation->expires_at,
+                'invitation_link' => $invitationLink,
                 'invited_by' => [
                     'id' => $invitedBy?->id,
                     'full_name' => $invitedBy?->full_name,

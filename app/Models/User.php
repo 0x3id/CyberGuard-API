@@ -120,4 +120,11 @@ class User extends Authenticatable implements MustVerifyEmail
         $current = $this->personalProjects()->count();
         return $current < $limit;
     }
+
+
+    public function apiKeys(): HasMany
+    {
+        return $this->hasMany(UserApiKey::class);
+    }
+
 }

@@ -19,6 +19,7 @@ use App\Http\Controllers\UserSubscriptionController;
 use App\Http\Controllers\SubscriptionBillingController;
 use App\Http\Controllers\PaymobWebhookController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserApiKeyController;
 use App\Models\ProjectInvitation;
 
 // ── Authentication Route ─────────────────
@@ -124,7 +125,7 @@ Route::middleware('auth:sanctum')->group(function() {
         // 4. Cancel invitation
         Route::delete('invitations/{token}/reject', 'reject');
         // 5. Get All Invitations Of Project
-        Route::get('projects/{project}/invitations/pending', 'pendingInvitation');
+        Route::get('projects/{project}/invitations', 'pendingInvitation');
     });
 
     // ── Collaborators ─────────────────────
@@ -188,6 +189,13 @@ Route::middleware('auth:sanctum')->group(function() {
         // 5. Upload New Findings
         Route::post('/targets/{target}/findings', 'uploadFinding');
         Route::get('targets/{target}/endpoints', 'getEndpoints');
+    });
+
+    // ── User Api Keys ──────────────
+    Route::controller(UserApiKeyController::class)->group(function() {
+        Route::get('/apiKeys', 'index');
+        Route::post('/apiKeys', 'store');
+        Route::delete('/apiKeys/{apiKey}', 'delete');
     });
 
 });
