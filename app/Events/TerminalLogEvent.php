@@ -30,4 +30,8 @@ class TerminalLogEvent implements ShouldBroadcastNow
     {
         return 'terminal-log';
     }
+    public function broadcastConnections(): array
+    {
+       return ['reverb'];
+    }
 }

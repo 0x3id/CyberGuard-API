@@ -30,4 +30,8 @@ class ScanResultEvent implements ShouldBroadcastNow
     {
         return 'scan-results';
     }
+    public function broadcastConnections(): array
+    {
+       return ['reverb'];
+    }
 }
