@@ -27,11 +27,16 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'job_tittle',
         'avatar_url',
+        // Google OAuth fields
+        'google_id',
+        'auth_provider',
+        // Security / meta
         'two_factor_enabled',
         'failed_login_attempts',
         'lockout_until',
         'ip_address',
         'last_login_at',
+        'email_verified_at',
     ];
 
     protected $hidden = [

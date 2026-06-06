@@ -35,4 +35,22 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Google OAuth 2.0 — Laravel Socialite Driver
+    |--------------------------------------------------------------------------
+    | Consumed by Socialite::driver('google') in GoogleAuthController.
+    | The three keys below are required by the Socialite Google driver:
+    |   - client_id     : OAuth 2.0 Client ID from Google Cloud Console
+    |   - client_secret : OAuth 2.0 Client Secret from Google Cloud Console
+    |   - redirect      : Must exactly match the URI registered in Google Console
+    |
+    | Values are loaded from .env — never hardcode credentials here.
+    */
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect'      => env('GOOGLE_CALLBACK_URL'),
+    ],
+
 ];

@@ -4,12 +4,13 @@ return [
     'drivers' => [
         'subdomain-scan' => [
             'display_name' => 'Custom Subdomain Enum & Analysis',
+            'description' => 'Enumerates and analyzes a target domain to discover subdomains and associated metadata.',
             'image' => 'sub-domain-scan:latest',
-            'category' => 'recon',
-            'command_pattern' => '{{TARGET}}', // The python script accepts target as the first argument
+            'category' => 'reconnaissance',
+            'command_pattern' => '{{TARGET}}',
             'output_format' => 'json',
             'timeout_seconds' => 2000,
-            'default_flags' => [], // The python script does not take flags directly
+            'default_flags' => [],
             'supports_streaming' => true,
             'triggers' => [],
             'field_map' => [
@@ -30,14 +31,16 @@ return [
                 'metadata.issue_type' => "path: metadata.issue_type",
             ]
         ],
+
         'web-endpoint-fuzzer' => [
             'display_name' => 'Web Endpoint Fuzzer & Classifier',
+            'description' => 'Discovers and classifies web endpoints by fuzzing application routes and identifying risk indicators.',
             'image' => 'endpoint-fuzzer:latest',
-            'category' => 'recon',
-            'command_pattern' => '{{TARGET}}', // The python script accepts target as the first argument
+            'category' => 'application-security',
+            'command_pattern' => '{{TARGET}}',
             'output_format' => 'json',
             'timeout_seconds' => 2000,
-            'default_flags' => [], // The python script does not take flags directly
+            'default_flags' => [],
             'supports_streaming' => true,
             'triggers' => [],
             'field_map' => [
@@ -56,15 +59,16 @@ return [
                 'tags' => "path: tags"
             ]
         ],
-        "sqli" => [
+
+        'sqli' => [
             'display_name' => 'SQL Injection Scanner',
-            'description' => 'Automated detection and analysis of SQL Injection vulnerabilities in web applications.',
+            'description' => 'Automated detection and analysis of SQL injection vulnerabilities in web applications.',
             'image' => 'sql-tester-image',
-            'category' => 'web',
-            'command_pattern' => '{{TARGET}}', // The python script accepts target as the first argument
+            'category' => 'application-security',
+            'command_pattern' => '{{TARGET}}',
             'output_format' => 'json',
             'timeout_seconds' => 2000,
-            'default_flags' => ["category"], // The python script does not take flags directly
+            'default_flags' => ["category"],
             'supports_streaming' => true,
             'triggers' => [],
             'field_map' => [
@@ -75,7 +79,7 @@ return [
                 'cvss_score' => "path: cvss_score",
                 'cvss_vector' => "path: cvss_vector",
                 'cve_id' => "path: cve_id",
-                'metadata.payloads' => "path: metadata.payloads ",
+                'metadata.payloads' => "path: metadata.payloads",
                 'metadata.request' => "path: metadata.request",
                 'metadata.response' => "path: metadata.response",
                 'affected_url' => "path: affected_url",
@@ -83,5 +87,199 @@ return [
                 'tags' => "path: tags"
             ]
         ],
+
+        'nmap-quick-scan' => [
+            'display_name' => 'CyberGuard Quick Port Scan',
+            'description' => 'Rapid port scan to identify open services and basic network exposures.',
+            'image' => 'cyberguard-nmap-scan:latest',
+            'category' => 'network-reconnaissance',
+            'command_pattern' => '--target {{TARGET}} --scan quick',
+            'output_format' => 'json',
+            'timeout_seconds' => 600,
+            'default_flags' => [],
+            'supports_streaming' => true,
+            'triggers' => [],
+            'field_map' => [
+                'title' => 'path: title',
+                'severity' => 'path: severity',
+                'description' => 'path: description',
+                'remediation' => 'path: remediation',
+                'cvss_score' => 'path: cvss_score',
+                'cvss_vector' => 'path: cvss_vector',
+                'cve_id' => 'path: cve_id',
+                'affected_url' => 'path: affected_url',
+                'proof' => 'path: proof',
+                'tags' => 'path: tags',
+                'metadata.host' => 'path: metadata.host',
+                'metadata.port' => 'path: metadata.port',
+                'metadata.protocol' => 'path: metadata.protocol',
+                'metadata.service' => 'path: metadata.service',
+                'metadata.state' => 'path: metadata.state',
+                'metadata.scan_type' => 'path: metadata.scan_type',
+                'metadata.scan_time' => 'path: metadata.scan_time',
+            ]
+        ],
+
+        'nmap-service-vuln' => [
+            'display_name' => 'Advanced Service Detection & Vuln Scan',
+            'description' => 'Performs service detection with vulnerability checks for exposed services.',
+            'image' => 'cyberguard-nmap-scan:latest',
+            'category' => 'vulnerability-assessment',
+            'command_pattern' => '--target {{TARGET}} --scan service --vuln-check',
+            'output_format' => 'json',
+            'timeout_seconds' => 1800,
+            'default_flags' => [],
+            'supports_streaming' => true,
+            'triggers' => [],
+            'field_map' => [
+                'title' => 'path: title',
+                'severity' => 'path: severity',
+                'description' => 'path: description',
+                'remediation' => 'path: remediation',
+                'cvss_score' => 'path: cvss_score',
+                'cvss_vector' => 'path: cvss_vector',
+                'cve_id' => 'path: cve_id',
+                'affected_url' => 'path: affected_url',
+                'proof' => 'path: proof',
+                'tags' => 'path: tags',
+                'metadata.host' => 'path: metadata.host',
+                'metadata.port' => 'path: metadata.port',
+                'metadata.protocol' => 'path: metadata.protocol',
+                'metadata.service' => 'path: metadata.service',
+                'metadata.state' => 'path: metadata.state',
+                'metadata.scan_type' => 'path: metadata.scan_type',
+                'metadata.extra' => 'path: metadata.extra', // لمعرفة تفاصيل إصدار الخدمة المكتشفة
+                'metadata.scan_time' => 'path: metadata.scan_time',
+            ]
+        ],
+
+        'nmap-full-scan' => [
+            'display_name' => 'Full Infrastructure Port Scan (1-65535)',
+            'description' => 'Comprehensive port scan across the full TCP port range.',
+            'image' => 'cyberguard-nmap-scan:latest',
+            'category' => 'network-reconnaissance',
+            'command_pattern' => '--target {{TARGET}} --scan full',
+            'output_format' => 'json',
+            'timeout_seconds' => 3600,
+            'default_flags' => [],
+            'supports_streaming' => true,
+            'triggers' => [],
+            'field_map' => [
+                'title' => 'path: title',
+                'severity' => 'path: severity',
+                'description' => 'path: description',
+                'remediation' => 'path: remediation',
+                'cvss_score' => 'path: cvss_score',
+                'cvss_vector' => 'path: cvss_vector',
+                'cve_id' => 'path: cve_id',
+                'affected_url' => 'path: affected_url',
+                'proof' => 'path: proof',
+                'tags' => 'path: tags',
+                'metadata.host' => 'path: metadata.host',
+                'metadata.port' => 'path: metadata.port',
+                'metadata.protocol' => 'path: metadata.protocol',
+                'metadata.service' => 'path: metadata.service',
+                'metadata.state' => 'path: metadata.state',
+                'metadata.scan_type' => 'path: metadata.scan_type',
+                'metadata.scan_time' => 'path: metadata.scan_time',
+            ]
+        ],
+
+        'nmap-stealth-scan' => [
+            'display_name' => 'IDS Evasion & Stealth Scan',
+            'description' => 'Stealthy discovery scan designed to reduce detection by intrusion prevention systems.',
+            'image' => 'cyberguard-nmap-scan:latest',
+            'category' => 'evasion',
+            'command_pattern' => '--target {{TARGET}} --scan stealth --no-ping',
+            'output_format' => 'json',
+            'timeout_seconds' => 2400,
+            'default_flags' => [],
+            'supports_streaming' => true,
+            'triggers' => [],
+            'field_map' => [
+                'title' => 'path: title',
+                'severity' => 'path: severity',
+                'description' => 'path: description',
+                'remediation' => 'path: remediation',
+                'cvss_score' => 'path: cvss_score',
+                'cvss_vector' => 'path: cvss_vector',
+                'cve_id' => 'path: cve_id',
+                'affected_url' => 'path: affected_url',
+                'proof' => 'path: proof',
+                'tags' => 'path: tags',
+                'metadata.host' => 'path: metadata.host',
+                'metadata.port' => 'path: metadata.port',
+                'metadata.protocol' => 'path: metadata.protocol',
+                'metadata.service' => 'path: metadata.service',
+                'metadata.state' => 'path: metadata.state',
+                'metadata.scan_type' => 'path: metadata.scan_type',
+                'metadata.scan_time' => 'path: metadata.scan_time',
+            ]
+        ],
+
+        'nmap-os-discovery' => [
+            'display_name' => 'Host Operating System Fingerprinting',
+            'description' => 'Determines host operating system and fingerprinting details via network discovery.',
+            'image' => 'cyberguard-nmap-scan:latest',
+            'category' => 'reconnaissance',
+            'command_pattern' => '--target {{TARGET}} --scan os',
+            'output_format' => 'json',
+            'timeout_seconds' => 600,
+            'default_flags' => [],
+            'supports_streaming' => true,
+            'triggers' => [],
+            'field_map' => [
+                'title' => 'path: title',
+                'severity' => 'path: severity',
+                'description' => 'path: description',
+                'remediation' => 'path: remediation',
+                'cvss_score' => 'path: cvss_score',
+                'cvss_vector' => 'path: cvss_vector',
+                'cve_id' => 'path: cve_id',
+                'affected_url' => 'path: affected_url',
+                'proof' => 'path: proof',
+                'tags' => 'path: tags',
+                'metadata.host' => 'path: metadata.host',
+                'metadata.port' => 'path: metadata.port',
+                'metadata.protocol' => 'path: metadata.protocol',
+                'metadata.service' => 'path: metadata.service',
+                'metadata.state' => 'path: metadata.state',
+                'metadata.scan_type' => 'path: metadata.scan_type',
+                'metadata.extra' => 'path: metadata.extra', // لعرض تفاصيل الـ OS المكتشفة
+                'metadata.scan_time' => 'path: metadata.scan_time',
+            ]
+        ],
+
+        'nmap-udp-scan' => [
+            'display_name' => 'UDP Service Discovery',
+            'description' => 'Detects UDP services and enumerates UDP-based network exposures.',
+            'image' => 'cyberguard-nmap-scan:latest',
+            'category' => 'network-reconnaissance',
+            'command_pattern' => '--target {{TARGET}} --scan udp',
+            'output_format' => 'json',
+            'timeout_seconds' => 1200,
+            'default_flags' => [],
+            'supports_streaming' => true,
+            'triggers' => [],
+            'field_map' => [
+                'title' => 'path: title',
+                'severity' => 'path: severity',
+                'description' => 'path: description',
+                'remediation' => 'path: remediation',
+                'cvss_score' => 'path: cvss_score',
+                'cvss_vector' => 'path: cvss_vector',
+                'cve_id' => 'path: cve_id',
+                'affected_url' => 'path: affected_url',
+                'proof' => 'path: proof',
+                'tags' => 'path: tags',
+                'metadata.host' => 'path: metadata.host',
+                'metadata.port' => 'path: metadata.port',
+                'metadata.protocol' => 'path: metadata.protocol',
+                'metadata.service' => 'path: metadata.service',
+                'metadata.state' => 'path: metadata.state',
+                'metadata.scan_type' => 'path: metadata.scan_type',
+                'metadata.scan_time' => 'path: metadata.scan_time',
+            ]
+        ]
     ]
 ];

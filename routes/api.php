@@ -6,6 +6,7 @@ use App\Http\Controllers\TwoFactorAuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\CollaboratorController;
 use App\Http\Controllers\FindingController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Models\User;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -71,6 +72,15 @@ Route::prefix('auth')->group(function() {
         // 5. Get 2FA status
         Route::get('/2fa/status', 'status')->middleware('auth:sanctum');
     });
+
+    // ── Google OAuth 2.0 Routes ────────────────────────────────────────────
+    Route::controller(GoogleAuthController::class)->group(function() {
+        // 9. Redirect: returns the Google authorization URL (frontend redirects user there)
+        Route::get('/google/redirect', 'redirect');
+        // 10. Callback: Google posts the auth code here; exchanges it for a Sanctum token
+        Route::get('/google/callback', 'callback');
+    });
+    
 
 });
 
