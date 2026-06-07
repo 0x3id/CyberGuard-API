@@ -186,6 +186,6 @@ class GoogleAuthController extends Controller
             'provider' => $user->auth_provider,
         ]);
 
-        return redirect()->away(env('FRONTEND_URL') . 'google-callback?token=' . $token);
+        return redirect()->away(env('FRONTEND_URL') . 'google-callback?token=' . urlencode($token));
     }
 }
