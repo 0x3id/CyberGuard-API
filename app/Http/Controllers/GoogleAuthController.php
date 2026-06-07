@@ -64,7 +64,7 @@ class GoogleAuthController extends Controller
     |
     | We then apply our 3-case find-or-create logic and return a Sanctum token.
     |=========================================================================*/
-    public function callback(): JsonResponse
+    public function callback()
     {
         /*----------------------------------------------------------------------
         | 2a. Let Socialite handle the entire OAuth handshake.
@@ -186,20 +186,6 @@ class GoogleAuthController extends Controller
             'provider' => $user->auth_provider,
         ]);
 
-        return response()->json([
-            'status'  => 'success',
-            'message' => 'Signed in with Google successfully.',
-            'data'    => [
-                'token' => $token,
-                'user'  => [
-                    'id'                => $user->id,
-                    'full_name'         => $user->full_name,
-                    'email'             => $user->email,
-                    'avatar_url'        => $user->avatar_url,
-                    'auth_provider'     => $user->auth_provider,
-                    'email_verified_at' => $user->email_verified_at,
-                ],
-            ],
-        ], 200);
+        return redirect()->away(env('FRONTEND_URL') . 'google-callback?token=' . $token);
     }
 }
