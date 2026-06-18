@@ -6,31 +6,29 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class OrganizationSubscription extends Model
+class OrganizationInvitation extends Model
 {
     use HasUuids;
 
     protected $fillable = [
         'organization_id',
-        'plan',
-        'status',
-        'max_projects',
-        'max_targets',
-        'max_members',
-        'max_scans_per_month',
-        'scans_used_this_month',
-        'started_at',
+        'email',
+        'role',
+        'token',
         'expires_at',
     ];
 
     protected $casts = [
-        'started_at' => 'datetime',
         'expires_at' => 'datetime',
-        'scans_used_this_month' => 'integer',
     ];
 
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at->isPast();
     }
 }

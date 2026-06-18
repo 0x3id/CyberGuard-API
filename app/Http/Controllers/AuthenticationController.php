@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use PragmaRX\Google2FA\Google2FA;
 use App\Jobs\SendEmailVerifyJob;
+use App\Support\SubscriptionPlans;
 
 class AuthenticationController extends Controller
 {
@@ -34,13 +35,17 @@ class AuthenticationController extends Controller
                 'ip_address' => $request->ip(),
             ]);
 
+            $freePlan = SubscriptionPlans::user('free');
+
             UserSubscription::query()->create([
                 'user_id' => $user->id,
                 'plan' => 'free',
                 'status' => 'active',
-                'max_projects' => env('FREE_MAX_PROJECTS'),
-                'max_targets' => env('FREE_MAX_TARGETS'),
-                'max_scans_per_month' => env('FREE_MAX_SCANS_PER_MONTH'),
+                'max_projects' => $freePlan['max_projects'],
+                'max_collaborate_in_projects' => $freePlan['max_collaborate_in_projects'],
+                'max_targets' => $freePlan['max_targets_per_project'],
+                'max_targets_per_project' => $freePlan['max_targets_per_project'],
+                'max_scans_per_month' => $freePlan['max_scans_per_month'],
                 'started_at' => now(),
             ]);
             
@@ -56,6 +61,7 @@ class AuthenticationController extends Controller
             }
         }
     }
+
 /*===================== Login Controller ================================*/
     public function login(LoginRequest $request)
     {
@@ -150,6 +156,7 @@ class AuthenticationController extends Controller
             ]
         ], 200);
     }
+
 /*===================== Logout Controller ================================*/
     public function logout(Request $request)
     {

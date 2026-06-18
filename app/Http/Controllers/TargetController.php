@@ -12,9 +12,10 @@ use App\Models\Finding;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Exception;
-use App\Rules\ValidDomain;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
+use App\Models\Organization;
+use App\Support\WorkspaceContext;
 
 class TargetController extends Controller
 {
@@ -25,12 +26,8 @@ class TargetController extends Controller
     public function addNewTarget(Request $request, Project $project) : JsonResponse
     {
         $user = $request->user();
-        // 1. Check if user have access on this project or no
-        if (!$project->hasAccess($user->id)) {
-            return response()->json(['status' => 'Error' ,'message' => 'Unauthorized'], 403);
-        }
+        Gate::authorize('create', [Target::class, $project]);
 
-        // 2. Validate data
         $validated = $request->validate([
             'type'        => 'required|in:domain,ip,network',
             'label'       => 'required|string',
@@ -41,26 +38,26 @@ class TargetController extends Controller
                     Rule::when($request->type === 'network', ['regex:/^([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2}$/']),
             ],
         ]);
-        
-        // 3. Check if user role is viewer
-        if ($project->getUserRole($user->id) === 'viewer') {
-            return response()->json(['status' => 'Error' ,'message' => 'Only the owner and editors can add targets'], 403);
-        }
 
-        // 4. Create Target In Database
+        $isOrgContext = WorkspaceContext::isOrganization($request);
+        $verificationToken = $isOrgContext
+            ? 'cyberguard_secret_key:'.Str::random(1024)
+            : null;
+
         $target = Target::create([
             'project_id' => $project->id,
             'type'       => $validated['type'],
             'value'      => $validated['value'],
             'label'      => $validated['label'],
-            'is_verified' => true,
+            'is_verified' => ! $isOrgContext,
+            'ownership_verification_token' => $verificationToken,
             'risk_score' => 0.00
         ]);
 
         AuditLog::create([
             'user_id'     => $user->id,
-            'owner_type'  => User::class,
-            'owner_id'    => $user->id,
+            'owner_type'  => $project->owner_type,
+            'owner_id'    => $project->owner_id,
             'action'      => 'target.create',
             'entity_type' => Target::class,
             'entity_id'   => $target->id,
@@ -72,6 +69,11 @@ class TargetController extends Controller
             'status'      => 'success',
             'message'     => 'Target added successfuly',
             'target'      => $target,
+            'dns_verification' => $verificationToken ? [
+                'record_type' => 'TXT',
+                'record_name' => $this->baseDomain($target->value),
+                'record_value' => $verificationToken,
+            ] : null,
         ], 201);
     }
 
@@ -84,7 +86,6 @@ class TargetController extends Controller
         $project = Project::findOrFail($target->project_id);
         $user = $request->user();
 
-        // 1. Check If User Have Access On Project
         if (!$project->hasAccess($user->id)) {
             return response()->json(['status' => 'error' ,'message' => 'Unauthorized'], 403);
         }
@@ -102,15 +103,23 @@ class TargetController extends Controller
     {
         $user = $request->user();
 
-        $targets = Target::whereHas('project', function ($query) use ($user) {
-            // Owner
-            $query->where('owner_id', $user->id)
-                // Or collaborator/editor
-                ->orWhereHas('collaborators', function ($q) use ($user) {
-                    $q->where('user_id', $user->id)
-                    ->where('role', 'editor');
+        if ($request->attributes->get('is_organization_context')) {
+            $organization = $request->attributes->get('organization');
+            $targets = Target::whereHas('project', function ($query) use ($organization) {
+                $query->where('owner_type', \App\Models\Organization::class)
+                        ->where('owner_id', $organization->id);
+            })->get();
+        } else {
+            $targets = Target::whereHas('project', function ($query) use ($user) {
+                $query->where(function ($nested) use ($user) {
+                    $nested->where('owner_type', \App\Models\User::class)
+                        ->where('owner_id', $user->id);
+                })->orWhereHas('collaborators', function ($q) use ($user) {
+                        $q->where('user_id', $user->id)
+                            ->where('role', 'editor');
                 });
-        })->get();
+            })->get();
+        }
 
         // Calc Risk Score Of All Targets
         foreach($targets as $target):
@@ -146,41 +155,34 @@ class TargetController extends Controller
     public function updateTarget(Request $request, Project $project, Target $target) : JsonResponse
     {
         $user = $request->user();
-        // 1. Check if user have access on this project or no
-        if (!$project->hasAccess($user->id)) {
-            return response()->json(['status' => 'Error' ,'message' => 'Unauthorized'], 403);
+        Gate::authorize('manage', $target);
+
+        if ($target->project_id !== $project->id) {
+            return response()->json(['status' => 'Error' ,'message' => 'Target not found in this project'], 404);
         }
 
-        // 2. Ckeck if user not viewr
-        if ($project->getUserRole($user->id) === 'viewer') {
-            return response()->json(['status' => 'Error' ,'message' => 'Only the project owner & editors can edit'], 403);
-        }
-
-        // 3. Ckeck if target is exist
-        try {
-            $target = Target::where('id' , $target->id)->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['status' => 'Error' ,'message' => 'Target not found'], 404);
-        }
-
-        // 4. Validate updated data
         $validated = $request->validate([
             'label'        => 'sometimes|string|max:255',
             'value' => [
-                    'required',
+                    'sometimes',
                     Rule::when($target->type === 'ip', ['ip']),
                     Rule::when($target->type === 'domain', ['regex:/^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$/i']), 
                     Rule::when($target->type === 'network', ['regex:/^([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2}$/']),
             ],
         ]);
 
-        // 5. Update in database
+        if (array_key_exists('value', $validated) && WorkspaceContext::isOrganization($request)) {
+            $validated['is_verified'] = false;
+            $validated['dns_verified_at'] = null;
+            $validated['ownership_verification_token'] = 'cyberguard_secret_key:'.Str::random(1024);
+        }
+
         $target->update($validated);
 
         AuditLog::create([
             'user_id'     => $user->id,
-            'owner_type'  => User::class,
-            'owner_id'    => $user->id,
+            'owner_type'  => $project->owner_type,
+            'owner_id'    => $project->owner_id,
             'action'      => 'target.update',
             'entity_type' => Target::class,
             'entity_id'   => $target->id,
@@ -203,29 +205,18 @@ class TargetController extends Controller
     public function deleteTarget(Request $request, Project $project, Target $target): JsonResponse
     {
         $user = $request->user();
+        Gate::authorize('manage', $target);
 
-        // 1. Check if user have access on this project or no
-        if (!$project->hasAccess($user->id)) {
-            return response()->json(['status' => 'Error' ,'message' => 'Unauthorized'], 403);
+        if ($target->project_id !== $project->id) {
+            return response()->json(['status' => 'Error' ,'message' => 'Target not found in this project'], 404);
         }
 
-        // 2. Check if this target in db
-        try {
-            $target = Target::where('id' , $target->id)->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['status' => 'Error' ,'message' => 'Target not found'], 404);
-        }
-
-        // 3. Ckeck if user not viwer
-        if ($project->getUserRole($user->id) === 'viewer') {
-            return response()->json(['status' => 'Error' ,'message' => 'Only the owner and editors can add targets'], 403);
-        }
-
-        // 4. Store in database
         $target->delete();
 
         AuditLog::create([
             'user_id'     => $user->id,
+            'owner_type'  => $project->owner_type,
+            'owner_id'    => $project->owner_id,
             'action'      => 'target.deleted',
             'entity_type' => Target::class,
             'entity_id'   => $target->id,
@@ -234,6 +225,51 @@ class TargetController extends Controller
         ]);
 
         return response()->json(['status' => 'Success' ,'message' => 'Target deleted successfuly'], 200);
+    }
+
+    public function verifyDns(Request $request, Target $target): JsonResponse
+    {
+        Gate::authorize('manage', $target);
+
+        if ($target->type !== 'domain') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'DNS verification is only available for domain targets.',
+            ], 422);
+        }
+
+        if (! $target->ownership_verification_token) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'This target does not have a DNS verification token.',
+            ], 422);
+        }
+
+        $baseDomain = $this->baseDomain($target->value);
+        $records = dns_get_record($baseDomain, DNS_TXT);
+        $txtValues = collect($records ?: [])
+            ->pluck('txt')
+            ->filter(fn ($value) => is_string($value))
+            ->map(fn ($value) => trim($value, "\" \t\n\r\0\x0B"))
+            ->values();
+
+        $isVerified = $txtValues->contains($target->ownership_verification_token);
+
+        $target->update([
+            'is_verified' => $isVerified,
+            'dns_verified_at' => $isVerified ? now() : null,
+        ]);
+
+        return response()->json([
+            'status' => $isVerified ? 'success' : 'error',
+            'message' => $isVerified ? 'DNS ownership verified.' : 'DNS TXT record not found or token mismatch.',
+            'target' => $target->fresh(),
+            'expected_txt' => [
+                'record_type' => 'TXT',
+                'record_name' => $baseDomain,
+                'record_value' => $target->ownership_verification_token,
+            ],
+        ], $isVerified ? 200 : 422);
     }
 
     /**
@@ -256,5 +292,23 @@ class TargetController extends Controller
         $target->save();
 
         return;
+    }
+
+    private function baseDomain(string $value): string
+    {
+        $host = parse_url(str_contains($value, '://') ? $value : 'https://'.$value, PHP_URL_HOST) ?: $value;
+        $host = strtolower(trim($host, ". \t\n\r\0\x0B"));
+        $labels = array_values(array_filter(explode('.', $host)));
+
+        if (count($labels) <= 2) {
+            return $host;
+        }
+
+        $secondLevelTlds = ['co', 'com', 'net', 'org', 'gov', 'edu'];
+        $last = $labels[count($labels) - 1];
+        $previous = $labels[count($labels) - 2];
+        $take = strlen($last) === 2 && in_array($previous, $secondLevelTlds, true) ? 3 : 2;
+
+        return implode('.', array_slice($labels, -$take));
     }
 }

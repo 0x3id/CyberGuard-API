@@ -7,6 +7,7 @@ use App\Models\UserSubscription;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
+use App\Support\SubscriptionPlans;
 
 /**
  * GoogleAuthController (Socialite Edition)
@@ -151,14 +152,18 @@ class GoogleAuthController extends Controller
                     'email_verified_at' => now(), // Google already verified this email
                 ]);
 
+                $freePlan = SubscriptionPlans::user('free');
+
                 // Provision the default free subscription for new users
                 UserSubscription::create([
                     'user_id'             => $user->id,
                     'plan'                => 'free',
                     'status'              => 'active',
-                    'max_projects'        => env('FREE_MAX_PROJECTS', 3),
-                    'max_targets'         => env('FREE_MAX_TARGETS', 5),
-                    'max_scans_per_month' => env('FREE_MAX_SCANS_PER_MONTH', 10),
+                    'max_projects'        => $freePlan['max_projects'],
+                    'max_collaborate_in_projects' => $freePlan['max_collaborate_in_projects'],
+                    'max_targets'         => $freePlan['max_targets_per_project'],
+                    'max_targets_per_project' => $freePlan['max_targets_per_project'],
+                    'max_scans_per_month' => $freePlan['max_scans_per_month'],
                     'started_at'          => now(),
                 ]);
             }

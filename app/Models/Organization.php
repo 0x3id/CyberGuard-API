@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany as MorphManyRelation;
 
 class Organization extends Model
 {
@@ -43,6 +44,11 @@ class Organization extends Model
     public function projects(): MorphMany
     {
         return $this->morphMany(Project::class, 'owner');
+    }
+
+    public function billingOrders(): MorphManyRelation
+    {
+        return $this->morphMany(SubscriptionBillingOrder::class, 'billable');
     }
 
     public function hasMember(string $userId): bool

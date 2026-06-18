@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Target;
 use App\Models\Finding;
@@ -11,39 +12,55 @@ use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-
-use function Symfony\Component\Clock\now;
+use Illuminate\Support\Facades\Gate;
 
 class ProjectController extends Controller
 {
     // ────────────────────────────────────────────
     // GET /api/projects
-    // Get All Projects Of Users
+    // Get All Projects
     // ────────────────────────────────────────────
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        // Projects That User Owner
-        $ownedProjects = Project::where('owner_type', User::class)
-                                ->where('owner_id', $user->id)
-                                ->withCount('targets') // بيضيف targets_count
+        if ($request->attributes->get('is_organization_context')) {
+            $organization = $request->attributes->get('organization');
+
+            $projects = Project::where('owner_type', Organization::class)
+                                ->where('owner_id', $organization->id)
+                                ->withCount('targets')
                                 ->latest()
                                 ->get();
 
-        // Projects That User Collaborator
+            foreach ($projects as $project) {
+                $this->calcRiskScore($project);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'projects' => $projects,
+            ]);
+        }
+
+        // Personal Workspace
+        $ownedProjects = Project::where('owner_type', User::class)
+                                ->where('owner_id', $user->id)
+                                ->withCount('targets')
+                                ->latest()
+                                ->get();
+
         $collaboratingProjects = $user->collaboratingProjects()
                                 ->withCount('targets')
                                 ->latest()
                                 ->get();
 
-        foreach($ownedProjects as $ownedProject):
+        foreach($ownedProjects as $ownedProject) {
             $this->calcRiskScore($ownedProject);
-        endforeach;
-        foreach($collaboratingProjects as $collaboratingProject):
+        }
+        foreach($collaboratingProjects as $collaboratingProject) {
             $this->calcRiskScore($collaboratingProject);
-        endforeach;
-
+        }
 
         return response()->json([
             'owned'         => $ownedProjects,
@@ -57,57 +74,44 @@ class ProjectController extends Controller
     // ────────────────────────────────────────────
     public function store(Request $request): JsonResponse
     {
+        Gate::authorize('create', Project::class);
+
         $user = $request->user();
+        $isOrgContext = $request->attributes->get('is_organization_context');
+        $organization = $request->attributes->get('organization');
 
-        // 1. تحقق إن المستخدم يقدر ينشئ Project (الـ Limit)
-        // if (!$user->canCreateProject()) {
-        //     return response()->json([
-        //         'message' => 'You have reached your project limit. Please upgrade your plan.',
-        //     ], 403); // 403 = Forbidden
-        // }
-
-        // 2. Validate Data From Request
         $validated = $request->validate([
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
             'start_date'  => 'nullable|date',
-            'end_date'    => 'nullable|date|after:start_date',// after:start_date
+            'end_date'    => 'nullable|date|after:start_date',
         ]);
 
-        // 3. Create The Project
         $project = Project::create([
             ...$validated,
-            'owner_type' => User::class,  // App\Models\User
-            'owner_id'   => $user->id,
+            'owner_type' => $isOrgContext ? Organization::class : User::class,
+            'owner_id'   => $isOrgContext ? $organization->id : $user->id,
             'created_by' => $user->id,
             'status'     => 'active',
         ]);
 
-        // $project->collaborators()->attach($user->id, [
-            //     'role'       => 'owner',
-            //     'status'     => 'accepted',
-            //     'invited_by' => $user->id,
-            //     'invited_at' => now(),
-            //     'accepted_at'=> now(),
-            // ]);
+        if (!$isOrgContext) {
+            ProjectCollaborator::create([
+                'project_id' => $project->id,
+                'user_id'    => $user->id,
+                'invited_by' => $user->id,
+                'role'       => 'owner',
+                'status'     => 'accepted',
+                'invited_at' => now(),
+                'accepted_at'=> now(),
+            ]);
+        }
 
-        // 4. Add User As Owner In project_collaborators
-        ProjectCollaborator::create([
-            'project_id' => $project->id,
-            'user_id'    => $user->id,
-            'invited_by' => $user->id,
-            'role'       => 'owner',
-            'status'     => 'accepted',
-            'invited_at' => now(),
-            'accepted_at'=> now(),
-        ]);
-
-        // 5. Audit Log
         AuditLog::create([
             'user_id'     => $user->id,
-            'owner_type'  => User::class,
-            'owner_id'    => $user->id,
-            'action'      => 'user.added',
+            'owner_type'  => $isOrgContext ? Organization::class : User::class,
+            'owner_id'    => $isOrgContext ? $organization->id : $user->id,
+            'action'      => 'project.created',
             'entity_type' => Project::class,
             'entity_id'   => $project->id,
             'ip_address'  => $request->ip(),
@@ -126,19 +130,14 @@ class ProjectController extends Controller
     // ────────────────────────────────────────────
     public function show(Request $request, Project $project): JsonResponse
     {
-        // 1. Check if user have access in this project
-        if (!$project->hasAccess($request->user()->id)) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        Gate::authorize('view', $project);
 
-        // 2. جيب المشروع مع كل علاقاته
         $project->load([
-            'targets',           // الأهداف
-            'activeCollaborators', // الفريق المقبول
-            'creator',           // مين أنشأه
+            'targets',
+            'activeCollaborators',
+            'creator',
         ]);
 
-        // 3. ضيف إحصائيات
         $project->targets_count   = $project->targets()->count();
         $project->findings_count  = $project->targets()
                                             ->withCount('findings')
@@ -154,10 +153,7 @@ class ProjectController extends Controller
     // ────────────────────────────────────────────
     public function update(Request $request, Project $project): JsonResponse
     {
-        // Owner Only can update project
-        if ($project->getUserRole($request->user()->id) !== 'owner') {
-            return response()->json(['message' => 'Only the project owner can edit'], 403);
-        }
+        Gate::authorize('update', $project);
 
         $validated = $request->validate([
             'name'        => 'sometimes|string|max:255',
@@ -169,11 +165,14 @@ class ProjectController extends Controller
 
         $project->update($validated);
 
+        $isOrgContext = $request->attributes->get('is_organization_context');
+        $organization = $request->attributes->get('organization');
+
         AuditLog::create([
             'user_id'     => $request->user()->id,
-            'owner_type'  => User::class,
-            'owner_id'    => $request->user()->id,
-            'action'      => 'project.update',
+            'owner_type'  => $isOrgContext ? Organization::class : User::class,
+            'owner_id'    => $isOrgContext ? $organization->id : $request->user()->id,
+            'action'      => 'project.updated',
             'entity_type' => Project::class,
             'entity_id'   => $project->id,
             'ip_address'  => $request->ip(),
@@ -192,16 +191,17 @@ class ProjectController extends Controller
     // ────────────────────────────────────────────
     public function destroy(Request $request, Project $project): JsonResponse
     {
-        // بس الـ Owner يقدر يحذف
-        if ($project->created_by !== $request->user()->id) {
-            return response()->json(['message' => 'Only the project owner can delete'], 403);
-        }
+        Gate::authorize('delete', $project);
 
-        // Soft Delete — مش بيمسحه فعلاً بس بيحط deleted_at
         $project->delete();
+
+        $isOrgContext = $request->attributes->get('is_organization_context');
+        $organization = $request->attributes->get('organization');
 
         AuditLog::create([
             'user_id'     => $request->user()->id,
+            'owner_type'  => $isOrgContext ? Organization::class : User::class,
+            'owner_id'    => $isOrgContext ? $organization->id : $request->user()->id,
             'action'      => 'project.deleted',
             'entity_type' => Project::class,
             'entity_id'   => $project->id,
@@ -218,17 +218,12 @@ class ProjectController extends Controller
      */
     private function calcRiskScore(Project $project): void
     {
-        // Get all target ids inside project
-        $targetIds = Target::where('project_id', $project->id)
-            ->pluck('id');
-
-        // Get all findings for these targets
+        $targetIds = Target::where('project_id', $project->id)->pluck('id');
         $findings = Finding::whereIn('target_id', $targetIds)->get();
 
         if ($findings->isEmpty()) {
             $project->risk_score = 0.0;
             $project->save();
-
             return;
         }
 
@@ -237,18 +232,9 @@ class ProjectController extends Controller
         $medium   = $findings->where('severity', 'medium')->count();
         $low      = $findings->where('severity', 'low')->count();
 
-        // Calculate score
-        $riskScore =
-            (($critical * 10) +
-            ($high * 7) +
-            ($medium * 4) +
-            ($low * 1));
-
-        
-
+        $riskScore = (($critical * 10) + ($high * 7) + ($medium * 4) + ($low * 1));
         $riskScore = ($riskScore /  100);
 
-        // Save to project
         $project->risk_score = round($riskScore, 2);
         $project->save();
     }

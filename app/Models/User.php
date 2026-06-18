@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -43,6 +44,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'remember_token',
         'two_factor_secret',
+        'google_id',
+        'auth_provider',
+        'email_verified_at',
+        'ip_address',
     ];
 
     protected $casts = [
@@ -86,6 +91,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(SubscriptionBillingOrder::class);
     }
 
+    public function billingOrders(): MorphMany
+    {
+        return $this->morphMany(SubscriptionBillingOrder::class, 'billable');
+    }
+
     // User → ينتمي لـ Organizations كتير (عن طريق organization_members)
     public function organizations(): BelongsToMany
     {
@@ -121,8 +131,12 @@ class User extends Authenticatable implements MustVerifyEmail
     // هل وصل للـ Limit بتاعه في المشاريع؟
     public function canCreateProject(): bool
     {
-        $limit   = $this->subscription?->max_projects ?? 3;
-        $current = $this->personalProjects()->count();
+        $limit = $this->subscription?->max_projects ?? (int) config('subscriptions.users.free.max_projects', 1);
+        $current = Project::query()
+            ->where('owner_type', self::class)
+            ->where('owner_id', $this->id)
+            ->count();
+
         return $current < $limit;
     }
 

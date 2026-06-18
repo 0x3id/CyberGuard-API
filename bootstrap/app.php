@@ -15,9 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //Middleware To Force Response JSON
+        // Middleware To Force Response JSON
         $middleware->prependToGroup('api', [
-            ForceJsonResponse::class
+            ForceJsonResponse::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

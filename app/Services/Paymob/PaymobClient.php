@@ -10,12 +10,12 @@ class PaymobClient
 {
     public function authToken(): string
     {
-        $apiKey = env('PAYMOB_API_KEY');
+        $apiKey = config('paymob.api_key');
         if (! is_string($apiKey) || $apiKey === '') {
             throw new RuntimeException('Paymob API key is not configured.');
         }
 
-        $response = Http::baseUrl(env('PAYMOB_BASE_URL'))
+        $response = Http::baseUrl(config('paymob.base_url'))
             ->acceptJson()
             ->asJson()
             ->post('/auth/tokens', ['api_key' => $apiKey])
@@ -52,7 +52,7 @@ class PaymobClient
             $payload['merchant_order_id'] = $merchantOrderId;
         }
 
-        $response = Http::baseUrl(env('PAYMOB_BASE_URL'))
+        $response = Http::baseUrl(config('paymob.base_url'))
             ->acceptJson()
             ->asJson()
             ->post('/ecommerce/orders', $payload);
@@ -87,7 +87,7 @@ class PaymobClient
         string $currency,
         array $billingData,
     ): string {
-        $integrationId = env('PAYMOB_INTEGRATION_ID');
+        $integrationId = config('paymob.integration_id');
         if ($integrationId === null || $integrationId === '') {
             throw new RuntimeException('Paymob integration id is not configured.');
         }
@@ -102,7 +102,7 @@ class PaymobClient
             'integration_id' => (int) $integrationId,
         ];
 
-        $response = Http::baseUrl(env('PAYMOB_BASE_URL'))
+        $response = Http::baseUrl(config('paymob.base_url'))
             ->acceptJson()
             ->asJson()
             ->post('/acceptance/payment_keys', $payload);
@@ -131,7 +131,7 @@ class PaymobClient
             throw new RuntimeException('Paymob iframe id is not configured.');
         }
 
-        $base = rtrim((string) env('PAYMOB_BASE_URL'), '/');
+        $base = rtrim((string) config('paymob.base_url'), '/');
 
         return $base.'/acceptance/iframes/'.rawurlencode((string) $iframeId)
             .'?payment_token='.rawurlencode($paymentToken);

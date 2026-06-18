@@ -77,7 +77,13 @@ class Project extends Model
 
     public function hasAccess(string $userId): bool
     {
-        if ($this->created_by === $userId) return true;
+        if ($this->owner_type === Organization::class) {
+            $organization = $this->owner;
+
+            return $organization instanceof Organization && $organization->hasMember($userId);
+        }
+
+        if ($this->created_by === $userId || $this->owner_id === $userId) return true;
 
         return $this->activeCollaborators()
                     ->where('user_id', $userId)
@@ -86,6 +92,12 @@ class Project extends Model
 
     public function getUserRole(string $userId): ?string
     {
+        if ($this->owner_type === Organization::class) {
+            $organization = $this->owner;
+
+            return $organization instanceof Organization ? $organization->getMemberRole($userId) : null;
+        }
+
         if ($this->created_by === $userId) return 'owner';
 
         $collab = $this->collaborators()

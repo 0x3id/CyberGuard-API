@@ -17,12 +17,15 @@ class Target extends Model
         'value',
         'label',
         'is_verified',
+        'ownership_verification_token',
+        'dns_verified_at',
         'risk_score',
         'last_scanned_at',
     ];
 
     protected $casts = [
         'is_verified'     => 'boolean',
+        'dns_verified_at' => 'datetime',
         'last_scanned_at' => 'datetime',
         'risk_score'      => 'decimal:2',
     ];

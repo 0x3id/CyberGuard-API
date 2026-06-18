@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Organization;
 use App\Models\SubscriptionBillingOrder;
+use App\Models\User;
 use App\Models\UserSubscription;
 use App\Services\Paymob\PaymobTransactionHmac;
 use App\Support\SubscriptionPlanLimits;
+use App\Support\SubscriptionPlans;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -31,29 +34,16 @@ class PaymobWebhookController extends Controller
         }
 
         $obj = $payload['obj'] ?? null;
-        if (! is_array($obj)) {
-            return response()->noContent();
-        }
+        $orderData = is_array($obj) ? ($obj['order'] ?? null) : null;
 
-        $orderData = $obj['order'] ?? null;
-        if (! is_array($orderData)) {
+        if (! is_array($obj) || ! is_array($orderData)) {
             return response()->noContent();
         }
 
         $paymobOrderId = $orderData['id'] ?? null;
         $merchantRef = $orderData['merchant_order_id'] ?? null;
 
-        $billingOrder = null;
-        if (is_int($paymobOrderId) || is_string($paymobOrderId)) {
-            $billingOrder = SubscriptionBillingOrder::query()
-                ->where('paymob_order_id', $paymobOrderId)
-                ->first();
-        }
-        if (! $billingOrder && (is_string($merchantRef) || is_int($merchantRef))) {
-            $billingOrder = SubscriptionBillingOrder::query()
-                ->where('merchant_reference', (string) $merchantRef)
-                ->first();
-        }
+        $billingOrder = $this->findBillingOrder($paymobOrderId, $merchantRef);
 
         if (! $billingOrder) {
             Log::info('Paymob webhook: no matching billing order', compact('paymobOrderId', 'merchantRef'));
@@ -61,14 +51,12 @@ class PaymobWebhookController extends Controller
             return response()->noContent();
         }
 
-        $billingOrder->last_paymob_payload = $payload;
-        $billingOrder->save();
-
-        $txnId = $obj['id'] ?? null;
-        if (is_int($txnId) || is_string($txnId)) {
-            $billingOrder->paymob_transaction_id = (int) $txnId;
-            $billingOrder->save();
-        }
+        $billingOrder->update([
+            'last_paymob_payload' => $payload,
+            'paymob_transaction_id' => is_int($obj['id'] ?? null) || is_string($obj['id'] ?? null)
+                ? (int) $obj['id']
+                : $billingOrder->paymob_transaction_id,
+        ]);
 
         $success = $obj['success'] ?? false;
         if ($success !== true && $success !== 'true') {
@@ -76,7 +64,7 @@ class PaymobWebhookController extends Controller
                 'status' => 'failed',
                 'failure_reason' => is_array($obj['data'] ?? null)
                     ? (string) json_encode($obj['data'])
-                    : 'Payment not successful',
+                    : (string) ($obj['error'] ?? 'Payment not successful'),
             ]);
 
             return response()->noContent();
@@ -86,28 +74,14 @@ class PaymobWebhookController extends Controller
             return response()->noContent();
         }
 
-        $user = $billingOrder->user;
-        $limits = SubscriptionPlanLimits::forPlan($billingOrder->plan);
-        $months = max(1, (int) config('paymob.billing_period_months', 1));
-
-        DB::transaction(function () use ($billingOrder, $user, $limits, $months): void {
+        DB::transaction(function () use ($billingOrder): void {
             $lockedOrder = SubscriptionBillingOrder::query()
+                ->with('billable')
                 ->whereKey($billingOrder->id)
                 ->lockForUpdate()
                 ->first();
 
             if (! $lockedOrder || $lockedOrder->isPaid()) {
-                return;
-            }
-
-            $subscription = UserSubscription::query()
-                ->where('user_id', $user->id)
-                ->lockForUpdate()
-                ->first();
-
-            if (! $subscription) {
-                Log::error('Paymob webhook: user missing subscription row', ['user_id' => $user->id]);
-
                 return;
             }
 
@@ -117,17 +91,89 @@ class PaymobWebhookController extends Controller
                 'failure_reason' => null,
             ]);
 
-            $subscription->update([
-                'plan' => $lockedOrder->plan,
-                'status' => 'active',
-                'max_projects' => $limits['max_projects'],
-                'max_targets' => $limits['max_targets'],
-                'max_scans_per_month' => $limits['max_scans_per_month'],
-                'started_at' => now(),
-                'expires_at' => now()->addMonths($months),
-            ]);
+            if ($lockedOrder->billable instanceof User) {
+                $this->activateUserSubscription($lockedOrder);
+
+                return;
+            }
+
+            if ($lockedOrder->billable instanceof Organization) {
+                $this->markOrganizationAwaitingCorporateEmail($lockedOrder);
+            }
         });
 
         return response()->noContent();
+    }
+
+    private function findBillingOrder(mixed $paymobOrderId, mixed $merchantRef): ?SubscriptionBillingOrder
+    {
+        if (is_int($paymobOrderId) || is_string($paymobOrderId)) {
+            $order = SubscriptionBillingOrder::query()
+                ->where('paymob_order_id', $paymobOrderId)
+                ->first();
+
+            if ($order) {
+                return $order;
+            }
+        }
+
+        if (is_int($merchantRef) || is_string($merchantRef)) {
+            return SubscriptionBillingOrder::query()
+                ->where('merchant_reference', (string) $merchantRef)
+                ->first();
+        }
+
+        return null;
+    }
+
+    private function activateUserSubscription(SubscriptionBillingOrder $order): void
+    {
+        /** @var User $user */
+        $user = $order->billable;
+        $limits = SubscriptionPlanLimits::forPlan($order->plan);
+        $planConfig = SubscriptionPlans::user($order->plan);
+        $months = max(1, (int) config('paymob.billing_period_months', 1));
+
+        UserSubscription::query()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'plan' => $order->plan,
+                'status' => 'active',
+                'max_projects' => $limits['max_projects'],
+                'max_collaborate_in_projects' => $planConfig['max_collaborate_in_projects'],
+                'max_targets' => $limits['max_targets'],
+                'max_targets_per_project' => $limits['max_targets'],
+                'max_scans_per_month' => $limits['max_scans_per_month'],
+                'started_at' => now(),
+                'expires_at' => now()->addMonths($months),
+            ]
+        );
+    }
+
+    private function markOrganizationAwaitingCorporateEmail(SubscriptionBillingOrder $order): void
+    {
+        /** @var Organization $organization */
+        $organization = $order->billable;
+        $limits = SubscriptionPlans::organization($order->plan);
+
+        $subscription = $organization->subscription()->lockForUpdate()->first();
+        if (! $subscription) {
+            Log::error('Paymob webhook: organization missing subscription row', [
+                'organization_id' => $organization->id,
+                'billing_order_id' => $order->id,
+            ]);
+
+            return;
+        }
+
+        $subscription->update([
+            'plan' => $order->plan,
+            'status' => 'pending_email_verification',
+            'max_projects' => $limits['max_projects'],
+            'max_targets' => $limits['max_targets_per_project'],
+            'max_members' => $limits['max_members'],
+            'max_scans_per_month' => $limits['max_scans_per_month'],
+            'started_at' => now(),
+        ]);
     }
 }

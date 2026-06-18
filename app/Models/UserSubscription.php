@@ -15,8 +15,11 @@ class UserSubscription extends Model
         'plan',
         'status',
         'max_projects',
+        'max_collaborate_in_projects',
         'max_targets',
+        'max_targets_per_project',
         'max_scans_per_month',
+        'scans_used_this_month',
         'started_at',
         'expires_at',
     ];
@@ -24,6 +27,7 @@ class UserSubscription extends Model
     protected $casts = [
         'started_at' => 'datetime',
         'expires_at' => 'datetime',
+        'scans_used_this_month' => 'integer',
     ];
 
     public function user(): BelongsTo

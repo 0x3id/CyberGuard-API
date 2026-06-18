@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\BillingCheckoutRequest;
 use App\Models\SubscriptionBillingOrder;
+use App\Models\User;
 use App\Services\Paymob\PaymobClient;
-use App\Support\SubscriptionPlanLimits;
+use App\Support\SubscriptionPlans;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -22,12 +23,9 @@ class SubscriptionBillingController extends Controller
     {
         $plan = $request->validated('plan');
         $billingDataInput = $request->validated('billing_data');
+        $planConfig = SubscriptionPlans::user($plan);
 
-        $amountEgp = match ($plan) {
-            'starter' => (float) env('STARTER_AMOUNT_EGP'),
-            'pro' => (float) env('PRO_AMOUNT_EGP'),
-        };
-
+        $amountEgp = (float) $planConfig['amount_egp'];
         $amountCents = (int) round($amountEgp * 100);
         if ($amountCents < 100) {
             return response()->json([
@@ -38,6 +36,9 @@ class SubscriptionBillingController extends Controller
 
         $billingOrder = SubscriptionBillingOrder::query()->create([
             'user_id' => $request->user()->id,
+            'billable_type' => User::class,
+            'billable_id' => $request->user()->id,
+            'workspace_type' => 'user',
             'plan' => $plan,
             'amount_cents' => $amountCents,
             'currency' => 'EGP',
@@ -80,10 +81,10 @@ class SubscriptionBillingController extends Controller
             $billingOrder->paymob_order_id = $order['id'];
             $billingOrder->save();
 
-            $paymentToken = $this->paymob->createPaymentKey(
+        $paymentToken = $this->paymob->createPaymentKey(
                 $auth,
                 $amountCents,
-                $order['id'],
+                (int) $order['id'],
                 'EGP',
                 $billingData,
             );
@@ -122,26 +123,22 @@ class SubscriptionBillingController extends Controller
             'status' => 'success',
             'data' => [
                 'currency' => 'EGP',
-                'plans' => [
-                    [
-                        'id' => 'free',
-                        'amount_egp' => 0,
-                        'checkout_available' => false,
-                        'limits' => SubscriptionPlanLimits::forPlan('free'),
-                    ],
-                    [
-                        'id' => 'starter',
-                        'amount_egp' => (float) config('subscription.starter.amount_egp'),
+                'user_plans' => collect(SubscriptionPlans::all('users'))
+                    ->map(fn (array $plan, string $id) => [
+                        'id' => $id,
+                        'amount_egp' => (float) $plan['amount_egp'],
+                        'checkout_available' => ((float) $plan['amount_egp']) > 0,
+                        'limits' => $plan,
+                    ])
+                    ->values(),
+                'organization_plans' => collect(SubscriptionPlans::all('organizations'))
+                    ->map(fn (array $plan, string $id) => [
+                        'id' => $id,
+                        'amount_egp' => (float) $plan['amount_egp'],
                         'checkout_available' => true,
-                        'limits' => SubscriptionPlanLimits::forPlan('starter'),
-                    ],
-                    [
-                        'id' => 'pro',
-                        'amount_egp' => (float) config('subscription.pro.amount_egp'),
-                        'checkout_available' => true,
-                        'limits' => SubscriptionPlanLimits::forPlan('pro'),
-                    ],
-                ],
+                        'limits' => $plan,
+                    ])
+                    ->values(),
             ],
         ]);
     }
@@ -150,6 +147,7 @@ class SubscriptionBillingController extends Controller
     {
         $orders = SubscriptionBillingOrder::query()
             ->where('user_id', $request->user()->id)
+            ->where('workspace_type', 'user')
             ->latest()
             ->limit(50)
             ->get([

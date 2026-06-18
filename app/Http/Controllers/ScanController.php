@@ -9,10 +9,14 @@ use App\Models\Project;
 use App\Models\User;
 use App\Models\Finding;
 use App\Models\ProjectCollaborator;
+use App\Policies\ScanPolicy;
 use App\Services\ScanOrchestrator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\Gate;
+
 
 class ScanController extends Controller
 {
@@ -54,31 +58,22 @@ class ScanController extends Controller
             'target_id' => 'required|exists:targets,id',
             'driver_ids' => 'required|array',
             'driver_ids.*' => 'string', // e.g. ["nmap-tcp-scan", "subdomain-scan"]
+            "flags.*" => 'required|array',
+            "flag" => 'string'
         ]);
 
         $target = Target::findOrFail($request->target_id);
 
-        // Get All Collaborators Of Project
-        $collaborators = ProjectCollaborator::where('project_id', $target->project_id)->get();
+        // Security / Authorization check via ScanPolicy
+        Gate::authorize('create', $target);
 
-        // Security / Authorization check
-        $exists = $collaborators->contains('user_id', $request->user()->id);
-        if (!$exists) 
-        {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthorized access to target',
-            ], 403);
-        }
-
-        $user = $collaborators->where('user_id' , $request->user()->id)->first();
-        // Check The Role Of Users
-        if ($user->role === 'viewer')
-        {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Only owners and editors can scan',
-            ], 403);
+        if ($request->attributes->get('is_organization_context')) {
+            $organization = $request->attributes->get('organization');
+            if ($organization->subscription) {
+                $organization->subscription->increment('scans_used_this_month');
+            }
+        } elseif ($request->user()->subscription) {
+            $request->user()->subscription->increment('scans_used_this_month');
         }
 
         $driverIds = $request->driver_ids; // Tools that will run

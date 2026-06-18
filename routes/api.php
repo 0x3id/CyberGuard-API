@@ -1,46 +1,79 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+// ── Core Authentication Controllers ─────────────────────────────────────────
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\TwoFactorAuthController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\CollaboratorController;
-use App\Http\Controllers\FindingController;
 use App\Http\Controllers\GoogleAuthController;
-use App\Models\User;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PasswordResetController;
-use App\Http\Controllers\ProjectInvitationController;
-use App\Http\Controllers\ScanController;
+
+// ── Personal & Core Platform Controllers ────────────────────────────────────
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TargetController;
+use App\Http\Controllers\ScanController;
+use App\Http\Controllers\FindingController;
+use App\Http\Controllers\CollaboratorController;
+use App\Http\Controllers\ProjectInvitationController;
+use App\Http\Controllers\UserApiKeyController;
+
+// ── B2B Multi-Tenancy & Billing Controllers ─────────────────────────────────
 use App\Http\Controllers\UserSubscriptionController;
 use App\Http\Controllers\SubscriptionBillingController;
 use App\Http\Controllers\PaymobWebhookController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\UserApiKeyController;
-use App\Models\ProjectInvitation;
+use App\Http\Controllers\OrganizationWebhookController;
+use App\Http\Controllers\OrganizationOnboardingController;
+use App\Http\Controllers\OrganizationPaymentController;
+use App\Http\Controllers\OrganizationCorporateEmailVerificationController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\MemberManagementController;
+use App\Http\Controllers\OrganizationInvitationController;
+use App\Http\Middleware\CheckOrganizationContext;
 
-// ── Authentication Route ─────────────────
+/*
+|--------------------------------------------------------------------------
+| Public Webhook & Billing Redirect Routes (No Middleware)
+|--------------------------------------------------------------------------
+*/
+
+// Egypt Local Payment Gateway Webhook (Paymob)
+Route::post('billing/paymob/webhook', PaymobWebhookController::class);
+
+// Global B2B Gateway Webhook (Stripe Payment Success -> Atomic Identity Swap)
+Route::post('billing/stripe/organization-webhook', [OrganizationWebhookController::class, 'handle']);
+
+// Post-payment landing route for Paymob redirection
+Route::get('billing/paymob/redirect', [UserSubscriptionController::class, 'handleRedirect']);
+
+Route::get('organizations/corporate-email/verify/{billing_order}', [OrganizationCorporateEmailVerificationController::class, 'verify'])
+    ->middleware('signed')
+    ->name('organizations.corporate-email.verify');
+
+// Public endpoint to retrieve dynamic subscription tier data
+Route::get('/billing/plans', [SubscriptionBillingController::class, 'plans']);
+
+
+/*
+|--------------------------------------------------------------------------
+| Public Authentication & Identity Routes
+|--------------------------------------------------------------------------
+*/
 Route::prefix('auth')->group(function() {
     Route::controller(AuthenticationController::class)->group(function() {
-        // 1. Register Route
         Route::post('/register', 'register');
-        // 2. Login Route
         Route::post('/login', 'login');
-        // 3. Logout Route
         Route::post('/logout', 'logout')->middleware('auth:sanctum');
     });
 
     Route::controller(PasswordResetController::class)->group(function() {
-        // 4. Forgot Password
         Route::post('/forgot-password', 'forgot');
-        // 5. Reset Password
         Route::post('/reset-password', 'reset');
     });
-    // 6. password.reset route needed by Laravel reset email
+
+    // Required structural route named by Laravel's core password reset email dispatcher
     Route::get('/password/reset/{token}', function ($token) {
         return response()->json([
             'status' => 'success',
@@ -49,163 +82,180 @@ Route::prefix('auth')->group(function() {
         ]);
     })->name('password.reset');
 
-    // 7. Get The User Data
-    Route::get('/me', function (Request $request) {
-        return response()->json(['user' => $request->user()]);
-    })->middleware('auth:sanctum');
+    // Authentication verification flow endpoints
+    Route::middleware('auth:sanctum')->group(function() {
+        Route::get('/me', function (Request $request) {
+            return response()->json(['user' => $request->user()]);
+        });
+        Route::get('/status', function (Request $request) {
+            return response()->json(['status' => 'success', 'user' => $request->user()]);
+        });
+    });
 
-    // 8. Authentication health check
-    Route::get('/status', function (Request $request) {
-        return response()->json(['status' => 'success', 'user' => $request->user()]);
-    })->middleware('auth:sanctum');
-
-    // ── 2FA Routes ─────────────────
+    // Time-Based One-Time Password (TOTP) 2FA Handlers
     Route::controller(TwoFactorAuthController::class)->group(function() {
-        // 1. Setup 2FA (returns QR code)
         Route::post('/2fa/setup', 'setup')->middleware('auth:sanctum');
-        // 2. Enable 2FA
         Route::post('/2fa/enable', 'enable')->middleware('auth:sanctum');
-        // 3. Disable 2FA
         Route::post('/2fa/disable', 'disable')->middleware('auth:sanctum');
-        // 4. Verify 2FA code during login
         Route::post('/2fa/verify', 'verify');
-        // 5. Get 2FA status
         Route::get('/2fa/status', 'status')->middleware('auth:sanctum');
     });
 
-    // ── Google OAuth 2.0 Routes ────────────────────────────────────────────
+    // Google OAuth 2.0 Integration Handlers
     Route::controller(GoogleAuthController::class)->group(function() {
-        // 9. Redirect: returns the Google authorization URL (frontend redirects user there)
         Route::get('/google/redirect', 'redirect');
-        // 10. Callback: Google posts the auth code here; exchanges it for a Sanctum token
         Route::get('/google/callback', 'callback');
     });
-    
-
 });
 
-// ── Email Verify Routes ─────────────────
+/*
+|--------------------------------------------------------------------------
+| Cryptographically Signed Email Verification Protocol
+|--------------------------------------------------------------------------
+*/
 Route::prefix('email')->group(function() {
-    // 1. Send Email Verification
     Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'sendEmailVerification'])
         ->middleware('signed')->name('verification.verify');
-    // 2. Resend Email Verification
+        
     Route::post('/verification-notification/resend', [EmailVerificationController::class, 'resendEmailVerification'])
         ->middleware(['throttle:6,1'])->name('verification.send');
 });
 
-// ── Billing Routes ─────────────────
-// 1. Paymob Webhook
-Route::post('billing/paymob/webhook', PaymobWebhookController::class);
-// 2. Paymob Redirect after payment
-Route::get('billing/paymob/redirect', [UserSubscriptionController::class, 'handleRedirect']);
-// 3. Get Plans
-Route::get('/billing/plans', [SubscriptionBillingController::class, 'plans']);
 
+/*
+|--------------------------------------------------------------------------
+| Authenticated Infrastructure Group (Sanctum Protected)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth:sanctum')->group(function() {
-    // ── Dashboard ──────────────────────────────────────────────────
-    // Aggregate security metrics for the Risk Management Dashboard
+
+    /*
+     * ── Group A: Context-Free Global Routes ─────────────────────────────────
+     * These endpoints execute under general auth scope and do NOT demand 
+     * structural or behavioral multi-tenant organization bounding headers.
+     */
+
+    // Individual Account Metrics & Global Security Overview
     Route::get('/dashboard/metrics', [DashboardController::class, 'getMetrics']);
 
-    // ── Projects Resource ─────────────────
-    Route::apiResource('projects', ProjectController::class);
-
-    // ── User subscription & Egypt (Paymob) billing ─────────────────
+    // Standard B2C Subscription & Payment Orders Management
     Route::controller(UserSubscriptionController::class)->group(function() {
-        // 1. Get Subscription Details
         Route::get('subscription', 'show');
-        // 2. Update Subscription
         Route::patch('subscription', 'update');
     });
     Route::controller(SubscriptionBillingController::class)->group(function() {
-        // 3. Checkout Subscription
         Route::post('billing/checkout', 'checkout');
-        // 4. Get Billing Orders
         Route::get('billing/orders', 'orders');
     });
 
-    // ── Invitations ─────────────────────
-    Route::controller(ProjectInvitationController::class)->group(function() {
-        // 1. Create Link To Invite User To Project
-        Route::post('projects/{project}/invite', 'invite');
-        // 2. Accept Invitation
-        Route::post('invitations/{token}/accept', 'accept');
-        // 3. Show Invitation Details
-        Route::get('invitations/{token}', 'showInvitation');
-        // 4. Cancel invitation
-        Route::delete('invitations/{token}/reject', 'reject');
-        // 5. Get All Invitations Of Project
-        Route::get('projects/{project}/invitations', 'pendingInvitation');
-    });
+    // B2B Organization Verification Onboarding Initialization
+    Route::post('/organizations/initiate', [OrganizationOnboardingController::class, 'initiate']);
 
-    // ── Collaborators ─────────────────────
-    Route::controller(CollaboratorController::class)->group(function() {
-        // Remove User From Project
-        Route::delete('projects/{project}/collaborators/{user}', 'remove');
-        // Change User Role
-        Route::patch('projects/{project}/collaborators/{user}', 'changeRole');
-        // List of project collaborators
-        Route::get('/projects/{project}/collaborators', 'getAll');
+    // B2B Organization Paymob Payment Management
+    Route::controller(OrganizationPaymentController::class)->group(function() {
+        Route::post('/organizations/{organization_id}/payment/checkout', 'initiateCheckout');
+        Route::get('/organizations/{organization_id}/payment/status', 'getPaymentStatus');
     });
+    Route::post('/organizations/{organization_id}/corporate-email', [OrganizationCorporateEmailVerificationController::class, 'request']);
+    
+    // Critical Free Endpoint: Resolves workspaces current user belongs to populate the Frontend UI Switcher Dropdown
+    Route::get('/organizations/my-workspaces', [OrganizationController::class, 'getMyWorkspaces']);
 
-    // ── Targets ─────────────────────
-    Route::controller(TargetController::class)->group(function() {
-        // 1. Add new Target
-        Route::post('projects/{project}/targets', 'addNewTarget');
-        // 2. Get Target Details
-        Route::get('targets/{target}', 'getTargetDetails');
-        // 3. Delete Target
-        Route::delete('projects/{project}/targets/{target}', 'deleteTarget');
-        // 4. Get All Targets Of Project
-        Route::get('projects/{project}/targets', 'getAllTargets');
-        // 5. Get All Target That user have access to scan on it
-        Route::get('/targets', 'allTargets');
-        // 6. Update Target
-        Route::patch('projects/{project}/targets/{target}', 'updateTarget');
+    // Corporate Member Provisioning Endpoint for Registered Platform Users
+    Route::post('/organizations/{token}/accept', [OrganizationInvitationController::class,'acceptExistingUser']);
+
+
+    /*
+     * ── Group B: Context-Bound B2B Tenant Isolation (Strict Architecture) ──
+     * This sub-pipeline intercepts requests using 'CheckOrganizationContext'. 
+     * Validates member attachment to 'X-Organization-Id' or throws a 403 Forbidden payload.
+     */
+    Route::middleware(CheckOrganizationContext::class)->group(function() {
+
+        // Polymorphic Projects Isolation CRUD
+        Route::apiResource('projects', ProjectController::class);
+
+        // Active Tenant Metadata Control System
+        Route::controller(OrganizationController::class)->group(function() {
+            Route::get('/organizations/details', 'getOrgDetails');
+            Route::put('/organizations', 'update');
+            Route::patch('/organizations', 'update');
+            Route::delete('/organizations', 'destroy'); // Cascades structural asset deletion via DB Transactions
+        });
+
+        // Identity & Access Management (IAM) Corporate Member Operations
+        Route::controller(MemberManagementController::class)->group(function() {
+            Route::get('/organizations/members', 'list');
+            Route::get('/organizations/invitations', 'listInvitations');
+            Route::post('/organizations/members/invite', 'invite'); // Validates subscription ceilings
+            Route::put('/organizations/members/{userId}/role', 'updateRole'); // Immutability on Owner row protected
+            Route::delete('/organizations/members/{userId}', 'remove'); // Forces instant Sanctum tokens revocation
+        });
+
+        // Legacy Project Collaboration & Invitations Engine
+        Route::controller(ProjectInvitationController::class)->group(function() {
+            Route::post('projects/{project}/invite', 'invite');
+            Route::post('invitations/{token}/accept', 'accept');
+            Route::get('invitations/{token}', 'showInvitation');
+            Route::delete('invitations/{token}/reject', 'reject');
+            Route::get('projects/{project}/invitations', 'pendingInvitation');
+        });
+
+        Route::controller(CollaboratorController::class)->group(function() {
+            Route::delete('projects/{project}/collaborators/{user}', 'remove');
+            Route::patch('projects/{project}/collaborators/{user}', 'changeRole');
+            Route::get('/projects/{project}/collaborators', 'getAll');
+        });
+
+        // Context-aware Target Management Framework (Handles Auto/Manual DNS Ownership Validation State)
+        Route::controller(TargetController::class)->group(function() {
+            Route::post('projects/{project}/targets', 'addNewTarget');
+            Route::get('targets/{target}', 'getTargetDetails');
+            Route::delete('projects/{project}/targets/{target}', 'deleteTarget');
+            Route::get('projects/{project}/targets', 'getAllTargets');
+            Route::get('/targets', 'allTargets');
+            Route::patch('projects/{project}/targets/{target}', 'updateTarget');
+            Route::post('/targets/{target}/verify-dns', 'verifyDns');
+        });
+
+        // Automated Container-bound Orchestration Scanner Engine (Enforces ScanPolicy Tier Constraints)
+        Route::controller(ScanController::class)->group(function() {
+            Route::get('/scanners', 'getAvailableScanners');
+            Route::post('/scan/start', 'startScan'); // Validates monthly threshold usage logs
+            Route::get('/scan/{scanJobId}/status', 'getScanStatus');
+            Route::get('/scan/{scanJobId}/findings', 'fetchFindings');
+            Route::get('/projects/{project}/scans', 'projectScans');
+            Route::get('/targets/{target}/scans', 'targetScans');
+            Route::post('/scan/{scanJobId}/pause', 'pauseScan');
+            Route::post('/scan/{scanJobId}/continue', 'continueScan');
+            Route::post('/scan/{scanJobId}/cancel', 'cancelScan');
+        });
+
+        // Vulnerability Findings Repository Parsers
+        Route::controller(FindingController::class)->group(function() {
+            Route::get('/targets/{target}/findings', 'index');
+            Route::get('/projects/{project}/findings', 'getProjectFindings');
+            Route::patch('/findings/{finding}/status', 'updateStatus');
+            Route::patch('/findings/{finding}/severity', 'updateSeverity');
+            Route::post('/targets/{target}/findings', 'uploadFinding');
+            Route::get('targets/{target}/endpoints', 'getEndpoints');
+        });
+
+        // Developer Programmatic API Credentials Storage
+        Route::controller(UserApiKeyController::class)->group(function() {
+            Route::get('/apiKeys', 'index');
+            Route::post('/apiKeys', 'store');
+            Route::delete('/apiKeys/{apiKey}', 'delete');
+        });
     });
+});
 
-    // ── Scans ─────────────────────
-    Route::controller(ScanController::class)->group(function() {
-        // 1. Get Available Scanners
-        Route::get('/scanners', [ScanController::class, 'getAvailableScanners']);
-        // 2. Start Scan
-        Route::post('/scan/start', [ScanController::class, 'startScan']);
-        // 3. Get Scan Status
-        Route::get('/scan/{scanJobId}/status', [ScanController::class, 'getScanStatus']);
-        // 4. Get Scan Findings
-        Route::get('/scan/{scanJobId}/findings', [ScanController::class, 'fetchFindings']);
-        // 5. Get All ScanJobs Of Project
-        Route::get('/projects/{project}/scans', [ScanController::class, 'projectScans']);
-        // 6. Get All ScansJobs Of Target
-        Route::get('/targets/{target}/scans', [ScanController::class, 'targetScans']);
-        // 7. Pause Scan
-        Route::post('/scan/{scanJobId}/pause', [ScanController::class, 'pauseScan']);
-        // 8. Continue Paused Scans
-        Route::post('/scan/{scanJobId}/continue', [ScanController::class, 'continueScan']);
-        // 9. Cancel Scan
-        Route::post('/scan/{scanJobId}/cancel', [ScanController::class, 'cancelScan']);
-    });
-
-    // ── Findings ───────────────────
-    Route::controller(FindingController::class)->group(function() {
-        // 1. Get All Findings of target
-        Route::get('/targets/{target}/findings', 'index');
-        // 2. Get All Findings of project
-        Route::get('/projects/{project}/findings', 'getProjectFindings');
-        // 3. Update Finding Status
-        Route::patch('/findings/{finding}/status', 'updateStatus');
-        // 4. Update Finding Severity
-        Route::patch('/findings/{finding}/severity', 'updateSeverity');
-        // 5. Upload New Findings
-        Route::post('/targets/{target}/findings', 'uploadFinding');
-        Route::get('targets/{target}/endpoints', 'getEndpoints');
-    });
-
-    // ── User Api Keys ──────────────
-    Route::controller(UserApiKeyController::class)->group(function() {
-        Route::get('/apiKeys', 'index');
-        Route::post('/apiKeys', 'store');
-        Route::delete('/apiKeys/{apiKey}', 'delete');
-    });
-
+/*
+|--------------------------------------------------------------------------
+| Public Organization Invitation Landing (Pre-auth Pipeline)
+|--------------------------------------------------------------------------
+*/
+Route::controller(OrganizationInvitationController::class)->group(function() {
+    Route::get('/organizations/invitations/{token}', 'getInvitationDetails');
+    Route::post('/organizations/invitations/{token}/register', 'acceptNewUser'); // Pre-fills immutable company registration form
 });

@@ -9,22 +9,12 @@ class SubscriptionPlanLimits
      */
     public static function forPlan(string $plan): array
     {
-        return match ($plan) {
-            'free' => [
-                'max_projects' => (int) config('subscription.free.max_projects'),
-                'max_targets' => (int) config('subscription.free.max_targets'),
-                'max_scans_per_month' => (int) config('subscription.free.max_scans_per_month'),
-            ],
-            'starter' => [
-                'max_projects' => (int) config('subscription.starter.max_projects'),
-                'max_targets' => (int) config('subscription.starter.max_targets'),
-                'max_scans_per_month' => (int) config('subscription.starter.max_scans_per_month'),
-            ],
-            'pro' => [
-                'max_projects' => (int) config('subscription.pro.max_projects'),
-                'max_targets' => (int) config('subscription.pro.max_targets'),
-                'max_scans_per_month' => (int) config('subscription.pro.max_scans_per_month'),
-            ],
-        };
+        $limits = SubscriptionPlans::user($plan);
+
+        return [
+            'max_projects' => (int) $limits['max_projects'],
+            'max_targets' => (int) $limits['max_targets_per_project'],
+            'max_scans_per_month' => (int) $limits['max_scans_per_month'],
+        ];
     }
 }

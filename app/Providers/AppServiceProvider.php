@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Target;
+use App\Policies\ScanPolicy;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +23,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::policy(Target::class, ScanPolicy::class);
     }
 }

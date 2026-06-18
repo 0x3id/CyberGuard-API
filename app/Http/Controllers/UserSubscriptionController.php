@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateUserSubscriptionRequest;
 use App\Support\SubscriptionPlanLimits;
+use App\Support\SubscriptionPlans;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -39,12 +40,15 @@ class UserSubscriptionController extends Controller
 
         $plan = $request->validated('plan');
         $limits = SubscriptionPlanLimits::forPlan($plan);
+        $planConfig = SubscriptionPlans::user($plan);
 
         $subscription->fill([
             'plan' => $plan,
             'status' => 'active',
             'max_projects' => $limits['max_projects'],
+            'max_collaborate_in_projects' => $planConfig['max_collaborate_in_projects'],
             'max_targets' => $limits['max_targets'],
+            'max_targets_per_project' => $limits['max_targets'],
             'max_scans_per_month' => $limits['max_scans_per_month'],
             'expires_at' => null,
         ]);
