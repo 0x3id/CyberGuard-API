@@ -26,7 +26,7 @@ class TargetController extends Controller
     public function addNewTarget(Request $request, Project $project) : JsonResponse
     {
         $user = $request->user();
-        Gate::authorize('create', [Target::class, $project]);
+        Gate::authorize('create', [Project::class, $project]);
 
         $validated = $request->validate([
             'type'        => 'required|in:domain,ip,network',
