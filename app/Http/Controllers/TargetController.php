@@ -246,7 +246,7 @@ class TargetController extends Controller
         }
 
         $baseDomain = $this->baseDomain($target->value);
-        $records = dns_get_record($baseDomain, DNS_TXT);
+        $records = dns_get_record($target->value, DNS_TXT);
         $txtValues = collect($records ?: [])
             ->pluck('txt')
             ->filter(fn ($value) => is_string($value))

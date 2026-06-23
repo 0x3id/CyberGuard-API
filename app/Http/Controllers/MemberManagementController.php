@@ -34,10 +34,10 @@ class MemberManagementController extends Controller
         ]);
 
         // Domain Constraint Check
-        // $emailDomain = substr(strrchr($validated['email'], "@"), 1);
-        // if ($emailDomain !== $organization->domain) {
-        //     return response()->json(['message' => 'Domain constraint failed. Email must match company domain.'], 422);
-        // }
+        $emailDomain = strtolower(substr(strrchr($validated['email'], "@"), 1));
+        if ($emailDomain !== strtolower((string) $organization->company_domain)) {
+            return response()->json(['message' => 'Domain constraint failed. Email must match company domain.'], 422);
+        }
 
         // Check Max Members Threshold
         $plan = $organization->subscription?->plan ?? 'starter';

@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany as MorphManyRelation;
@@ -20,9 +19,20 @@ class Organization extends Model
         'owner_id',
         'name',
         'slug',
-        'domain',
+        'company_domain',
+        'email',
+        'email_verified_at',
         'logo_url',
     ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    public function isEmailVerified(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
 
     public function owner(): BelongsTo
     {

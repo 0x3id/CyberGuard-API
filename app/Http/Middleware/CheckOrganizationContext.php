@@ -41,6 +41,13 @@ class CheckOrganizationContext
             ], 403);
         }
 
+        if (! $organization->subscription || $organization->subscription->status !== 'active') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Forbidden. This organization does not have an active subscription.'
+            ], 403);
+        }
+
         $request->attributes->set('is_organization_context', true);
         $request->attributes->set('workspace_type', 'organization');
         $request->attributes->set('workspace_owner', $organization);

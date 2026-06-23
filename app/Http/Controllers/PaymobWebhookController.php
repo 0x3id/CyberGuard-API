@@ -98,7 +98,7 @@ class PaymobWebhookController extends Controller
             }
 
             if ($lockedOrder->billable instanceof Organization) {
-                $this->markOrganizationAwaitingCorporateEmail($lockedOrder);
+                $this->activateOrgSubscription($lockedOrder);
             }
         });
 
@@ -150,11 +150,12 @@ class PaymobWebhookController extends Controller
         );
     }
 
-    private function markOrganizationAwaitingCorporateEmail(SubscriptionBillingOrder $order): void
+    private function activateOrgSubscription(SubscriptionBillingOrder $order): void
     {
         /** @var Organization $organization */
         $organization = $order->billable;
         $limits = SubscriptionPlans::organization($order->plan);
+        $months = max(1, (int) config('paymob.billing_period_months', 1));
 
         $subscription = $organization->subscription()->lockForUpdate()->first();
         if (! $subscription) {
@@ -168,12 +169,21 @@ class PaymobWebhookController extends Controller
 
         $subscription->update([
             'plan' => $order->plan,
-            'status' => 'pending_email_verification',
+            'status' => 'active',
             'max_projects' => $limits['max_projects'],
             'max_targets' => $limits['max_targets_per_project'],
             'max_members' => $limits['max_members'],
             'max_scans_per_month' => $limits['max_scans_per_month'],
             'started_at' => now(),
+            'expires_at' => now()->addMonths($months),
+        ]);
+
+        $organization->members()->syncWithoutDetaching([
+            $organization->owner_id => [
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'role' => 'owner',
+                'joined_at' => now(),
+            ],
         ]);
     }
 }

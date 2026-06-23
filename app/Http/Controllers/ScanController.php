@@ -65,8 +65,7 @@ class ScanController extends Controller
         $target = Target::findOrFail($request->target_id);
 
         // Security / Authorization check via ScanPolicy
-        Gate::authorize('create', $target);
-
+        Gate::authorize('create', [ScanJob::class, $target]);
         if ($request->attributes->get('is_organization_context')) {
             $organization = $request->attributes->get('organization');
             if ($organization->subscription) {

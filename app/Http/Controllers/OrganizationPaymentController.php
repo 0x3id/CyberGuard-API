@@ -58,6 +58,14 @@ class OrganizationPaymentController extends Controller
             ], 403);
         }
 
+        // Check if corporate email is verified
+        if (! $organization->isEmailVerified()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Corporate email must be verified before payment.',
+            ], 403);
+        }
+
         // Get plan pricing
         $planConfig = SubscriptionPlans::organization($validated['plan']);
         if (!$planConfig) {
@@ -84,8 +92,6 @@ class OrganizationPaymentController extends Controller
         }
 
         try {
-            $merchantReference = (string) Str::uuid();
-            
             $subscription = $organization->subscription ?: OrganizationSubscription::query()->create([
                 'organization_id' => $organization->id,
                 'plan' => $validated['plan'],
@@ -107,17 +113,31 @@ class OrganizationPaymentController extends Controller
                 'max_scans_per_month' => $planConfig['max_scans_per_month'],
             ]);
 
-            $billingOrder = SubscriptionBillingOrder::query()->create([
-                'user_id' => $user->id,
-                'billable_type' => Organization::class,
-                'billable_id' => $organization->id,
-                'workspace_type' => 'organization',
-                'plan' => $validated['plan'],
-                'amount_cents' => $amountCents,
-                'currency' => 'EGP',
-                'status' => 'pending',
-                'merchant_reference' => $merchantReference,
-            ]);
+            // Reuse the existing pending billing order, or create one if not found
+            $billingOrder = SubscriptionBillingOrder::query()
+                ->where('billable_type', Organization::class)
+                ->where('billable_id', $organization->id)
+                ->where('plan', $validated['plan'])
+                ->where('status', 'pending')
+                ->latest()
+                ->first();
+
+            if ($billingOrder) {
+                $merchantReference = $billingOrder->merchant_reference;
+            } else {
+                $merchantReference = (string) Str::uuid();
+                $billingOrder = SubscriptionBillingOrder::query()->create([
+                    'user_id' => $user->id,
+                    'billable_type' => Organization::class,
+                    'billable_id' => $organization->id,
+                    'workspace_type' => 'organization',
+                    'plan' => $validated['plan'],
+                    'amount_cents' => $amountCents,
+                    'currency' => 'EGP',
+                    'status' => 'pending',
+                    'merchant_reference' => $merchantReference,
+                ]);
+            }
 
             $billingData = [
                 'apartment' => $validated['billing_data']['apartment'] ?? 'NA',

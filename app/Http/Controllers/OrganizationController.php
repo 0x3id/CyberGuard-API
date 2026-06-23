@@ -103,8 +103,9 @@ class OrganizationController extends Controller
 
         try {
             DB::transaction(function () use ($organization) {
-                // Cascading delete relies on morphMany relationships and soft deletes,
-                // but we can explicitly delete projects to trigger cascades if needed.
+                // Cascade delete organization invitations
+                \App\Models\OrganizationInvitation::where('organization_id', $organization->id)->delete();
+
                 $organization->projects()->delete();
                 $organization->subscription()->delete();
                 $organization->members()->detach();

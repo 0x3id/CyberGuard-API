@@ -21,7 +21,8 @@ class CollaboratorController extends Controller
     // PATCH /api/projects/{project}/collaborators/{user}
     // Change User Role
     // ────────────────────────────────────────────
-    public function changeRole(Request $request, Project $project, User $user) : JsonResponse {
+    public function changeRole(Request $request, Project $project, User $user) : JsonResponse 
+    {
         $currentUser = $request->user();
 
         // 1. Only Owner can change role
@@ -67,7 +68,6 @@ class CollaboratorController extends Controller
             'collaborators' => $collaborators,
         ]);
     }
-
 
     //_____________________________________________
     // DELETE /api/projects/{project}/collaborators/{user}

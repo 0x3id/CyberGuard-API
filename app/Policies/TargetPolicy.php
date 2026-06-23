@@ -58,6 +58,7 @@ class TargetPolicy
 
     public function manage(User $user, Target $target): bool
     {
+        
         $project = $target->project;
         $request = request();
 
@@ -73,7 +74,7 @@ class TargetPolicy
                 && $project->owner_type === \App\Models\Organization::class
                 && $project->owner_id === $organization->id;
         }
-
+        
         return $project->hasAccess($user->id) && $project->getUserRole($user->id) !== 'viewer';
     }
 }

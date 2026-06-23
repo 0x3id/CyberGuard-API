@@ -12,12 +12,16 @@ class ScanPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, ?Target $target = null)
+    public function create(User $user, Target $target )
     {
-        
+    
         $request = request();
-        if (! $target || ! $target->project || ! $target->is_verified) {
+        if (! $target || ! $target->project) {
             return false;
+        }
+
+        if (! $target->is_verified) {
+            abort(403, 'Scan blocked: target domain ownership not verified via DNS TXT record');
         }
 
         if (WorkspaceContext::isOrganization($request)) {
@@ -60,6 +64,7 @@ class ScanPolicy
             ], 422));
         }
 
+        
         return true;
     }
 }
