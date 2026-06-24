@@ -26,7 +26,7 @@ class TargetController extends Controller
     public function addNewTarget(Request $request, Project $project) : JsonResponse
     {
         $user = $request->user();
-        Gate::authorize('create', [Project::class, $project]);
+        Gate::authorize('create', [Target::class, $project]);
 
         $validated = $request->validate([
             'type'        => 'required|in:domain,ip,network',
@@ -50,6 +50,7 @@ class TargetController extends Controller
             'value'      => $validated['value'],
             'label'      => $validated['label'],
             'is_verified' => ! $isOrgContext,
+            'dns_verified_at' => ! $isOrgContext ? now() : null,
             'ownership_verification_token' => $verificationToken,
             'risk_score' => 0.00
         ]);
