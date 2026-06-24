@@ -49,7 +49,7 @@ class SendOrganizationEmailVerificationJob implements ShouldQueue
             ]
         );
         // Pass the signed URL as a query param to the frontend
-        return rtrim($frontendUrl, '/') . '/verify-email.html?verify_url=' . urlencode($signedUrl);
+        return rtrim($frontendUrl, '/') . '/verify-organization-email.html?verify_url=' . urlencode($signedUrl);
     }
 
 }
