@@ -38,35 +38,18 @@ class SendOrganizationEmailVerificationJob implements ShouldQueue
             ->notify(new OrganizationEmailVerificationNotification($verificationUrl));
     }
 
-    // private function generateVerificationUrl($user, $frontendUrl)
-    // {
-    //     $signedUrl = url()->temporarySignedRoute(
-    //         'organizations.corporate-email.verify',
-    //         now()->addMinutes(60),
-    //         [
-    //             'billing_order' => $this->orderId,
-    //             'email' => $this->corporateEmail,
-    //         ]
-    //     );
-    //     // Pass the signed URL as a query param to the frontend
-    //     return rtrim($frontendUrl, '/') . '/verify-email.html?verify_url=' . urlencode($signedUrl);
-    // }
-    private function generateVerificationUrl($user,string $frontendUrl)
+    private function generateVerificationUrl($user, $frontendUrl)
     {
-        $expiration = now()->addMinutes(60);
-
-        $params = [
-            'billing_order' => $this->orderId,
-            'email' => strtolower($this->corporateEmail),
-            'expires' => $expiration->getTimestamp(),
-        ];
-
-        $urlForSignature = route('organizations.corporate-email.verify', $params);
-        $signature = hash_hmac('sha256', $urlForSignature, config('app.key'));
-
-        $params['signature'] = $signature;
-
-        // بناء لينك الـ Frontend النهائي المباشر
-        return rtrim($frontendUrl, '/') . '/verify-email.html?' . http_build_query($params);
+        $signedUrl = url()->temporarySignedRoute(
+            'organizations.corporate-email.verify',
+            now()->addMinutes(60),
+            [
+                'billing_order' => $this->orderId,
+                'email' => $this->corporateEmail,
+            ]
+        );
+        // Pass the signed URL as a query param to the frontend
+        return rtrim($frontendUrl, '/') . '/verify-email.html?verify_url=' . urlencode($signedUrl);
     }
+
 }
