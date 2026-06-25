@@ -14,8 +14,8 @@ class ScanPolicy
      */
     public function create(User $user, Target $target )
     {
-    
         $request = request();
+        
         if (! $target || ! $target->project) {
             return false;
         }
@@ -49,7 +49,7 @@ class ScanPolicy
             return true;
         }
 
-        if (! $target->project->hasAccess($user->id) || $target->project->getUserRole($user->id) === 'viewer' || ! $target->project->owner_type !== User::class) {
+        if (! $target->project->hasAccess($user->id) || $target->project->getUserRole($user->id) === 'viewer' || $target->project->owner_type !== User::class) {
             return false;
         }
 
