@@ -29,35 +29,70 @@ class DashboardController extends Controller
 
             // ── 1. Resolve authorized project scope ───────────────────────────
             //
-            // If a specific project is requested, validate access.
-            // Otherwise, aggregate across ALL projects the user can access
-            // (owned + actively collaborating).
+            // If in organization context, scope projects to the organization.
+            // Otherwise, scope to user's personal workspace.
+            $orgId = $request->header('X-Organization-Id');
 
-            if ($request->filled('project_id')) {
-                $project = Project::find($request->project_id);
+            if ($orgId) {
+                $organization = \App\Models\Organization::find($orgId);
 
-                if (!$project || !$project->hasAccess($user->id)) {
+                if (! $organization || ! $organization->hasMember($user->id)) {
                     return response()->json([
                         'status'  => 'error',
-                        'message' => 'Project not found or access denied.',
+                        'message' => 'Forbidden. You are not a member of this organization.',
                     ], 403);
                 }
 
-                $authorizedProjectIds = [$project->id];
+                if (! $organization->subscription || $organization->subscription->status !== 'active') {
+                    return response()->json([
+                        'status'  => 'error',
+                        'message' => 'Forbidden. This organization does not have an active subscription.',
+                    ], 403);
+                }
+
+                if ($request->filled('project_id')) {
+                    $project = Project::find($request->project_id);
+
+                    if (!$project || $project->owner_type !== \App\Models\Organization::class || $project->owner_id !== $organization->id) {
+                        return response()->json([
+                            'status'  => 'error',
+                            'message' => 'Project not found or access denied.',
+                        ], 403);
+                    }
+
+                    $authorizedProjectIds = [$project->id];
+                } else {
+                    $authorizedProjectIds = Project::where('owner_type', \App\Models\Organization::class)
+                        ->where('owner_id', $organization->id)
+                        ->pluck('id')
+                        ->all();
+                }
             } else {
-                // IDs of projects the user owns
-                $ownedIds = Project::where('created_by', $user->id)
-                    ->pluck('id');
+                if ($request->filled('project_id')) {
+                    $project = Project::find($request->project_id);
 
-                // IDs of projects the user actively collaborates on
-                $collaboratingIds = $user->collaboratingProjects()
-                    ->pluck('projects.id');
+                    if (!$project || $project->owner_type !== \App\Models\User::class || !$project->hasAccess($user->id)) {
+                        return response()->json([
+                            'status'  => 'error',
+                            'message' => 'Project not found or access denied.',
+                        ], 403);
+                    }
 
-                $authorizedProjectIds = $ownedIds
-                    ->merge($collaboratingIds)
-                    ->unique()
-                    ->values()
-                    ->all();
+                    $authorizedProjectIds = [$project->id];
+                } else {
+                    $ownedIds = Project::where('owner_type', \App\Models\User::class)
+                        ->where('owner_id', $user->id)
+                        ->pluck('id');
+
+                    $collaboratingIds = $user->collaboratingProjects()
+                        ->pluck('projects.id');
+
+                    $authorizedProjectIds = $ownedIds
+                        ->merge($collaboratingIds)
+                        ->unique()
+                        ->values()
+                        ->all();
+                }
             }
 
             if (empty($authorizedProjectIds)) {
