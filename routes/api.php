@@ -155,11 +155,18 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::controller(OrganizationPaymentController::class)->group(function() {
         Route::post('/organizations/{organization_id}/payment/checkout', 'initiateCheckout');
         Route::get('/organizations/{organization_id}/payment/status', 'getPaymentStatus');
+        Route::post('/organizations/{id}/resume-payment', 'resumePayment');
     });
     Route::post('/organizations/{organization_id}/corporate-email', [OrganizationCorporateEmailVerificationController::class, 'request']);
     
     // Critical Free Endpoint: Resolves workspaces current user belongs to populate the Frontend UI Switcher Dropdown
     Route::get('/organizations/my-workspaces', [OrganizationController::class, 'getMyWorkspaces']);
+
+    Route::controller(OrganizationController::class)->group(function () {
+        Route::post('/organizations/{id}/resend-verification', 'resendVerification');
+        Route::post('/organizations/{id}/restore', 'restore');
+        Route::delete('/organizations/{id}/force', 'forceDestroy');
+    });
 
     // Corporate Member Provisioning Endpoint for Registered Platform Users
     Route::post('/organizations/{token}/accept', [OrganizationInvitationController::class,'acceptExistingUser']);
