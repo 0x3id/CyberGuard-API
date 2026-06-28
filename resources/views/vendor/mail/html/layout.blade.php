@@ -1,6 +1,5 @@
 @php
-    $imgBase = rtrim(config('app.frontend_url', env('FRONTEND_URL', url('/'))), '/') . '/images/cyberguard';
-    $appUrl = rtrim(config('app.url'), '/');
+    $frontendUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL', url('/'))), '/');
 @endphp
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -32,14 +31,13 @@
             .card-body { padding: 28px 24px 24px !important; }
             .card-header { padding: 28px 24px 32px !important; }
             .card-footer { padding: 18px 24px !important; }
-            .badge-inline { display: block !important; margin: 4px 0 !important; }
             .back-link { padding: 8px 16px !important; font-size: 13px !important; }
         }
     </style>
 </head>
-<body style="margin:0;padding:0;background-color:#0b0f19;font-family:'Inter',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<body style="margin:0;padding:0;background-color:#09090b;font-family:'Inter',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#0b0f19;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#09090b;">
     <tr>
         <td align="center" style="padding:24px 16px;">
 
@@ -48,7 +46,7 @@
             <tr><td>
             <![endif]-->
 
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="email-wrapper" style="max-width:440px;width:100%;background-color:#111827;border:1px solid #1e293b;border-radius:24px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="email-wrapper" style="max-width:440px;width:100%;background-color:#121214;border:1px solid #1f1f23;border-radius:24px;">
                 <tr>
                     <td style="border-radius:24px;overflow:hidden;">
 
@@ -56,7 +54,7 @@
 
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                             <tr>
-                                <td class="card-body" style="padding:24px 32px 20px;background-color:#111827;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                                <td class="card-body" style="padding:24px 32px 20px;background-color:#121214;font-family:'Inter',Helvetica,Arial,sans-serif;">
                                     {!! $slot !!}
                                     {!! $subcopy ?? '' !!}
                                 </td>
@@ -79,9 +77,8 @@
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:20px auto 0;">
                     <tr>
                         <td align="center">
-                            <a href="{{ $backlinkUrl ?? $appUrl }}" class="back-link" style="color:#94a3b8;font-size:14px;text-decoration:none;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:500;padding:10px 20px;border-radius:9999px;background:rgba(255,255,255,0.02);border:1px solid #1e293b;display:inline-block;">
-                                <img src="{{ $imgBase }}/arrow-left.png" width="14" height="14" alt="<" style="vertical-align:middle;margin-right:6px;border:0;outline:none;display:inline-block;" />
-                                {{ $backlinkText ?? 'Back to CyberGuard' }}
+                            <a href="{{ $backlinkUrl ?? $frontendUrl }}" class="back-link" style="color:#a1a1aa;font-size:14px;text-decoration:none;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:500;padding:10px 20px;border-radius:9999px;background:rgba(255,255,255,0.02);border:1px solid #1f1f23;display:inline-block;">
+                                {{ $backlinkText ?? 'Back to CyberGuard Panel' }}
                             </a>
                         </td>
                     </tr>

@@ -1,105 +1,160 @@
-@php
-    $imgBase = rtrim(config('app.frontend_url', env('FRONTEND_URL', url('/'))), '/') . '/images/cyberguard';
-@endphp
-<x-mail::message>
-    {{-- Greeting --}}
-    @if (! empty($greeting))
-        <h1 style="font-size:21px;font-weight:800;color:#ffffff;margin:0 0 4px;letter-spacing:-0.5px;line-height:1.2;font-family:'Inter',Helvetica,Arial,sans-serif;">
+@component('mail::message')
+{{-- Greeting with user name --}}
+@if (! empty($userName) || ! empty($greeting))
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 16px;">
+    <tr>
+        <td style="font-size:22px;font-weight:800;color:#ffffff;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:-0.3px;line-height:1.3;">
+            Hello, {{ $userName ?? 'User' }}
+        </td>
+    </tr>
+</table>
+@if (! empty($greeting))
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 20px;">
+    <tr>
+        <td style="font-size:14px;font-weight:600;color:#3b82f6;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.02em;line-height:1.4;">
             {{ $greeting }}
-        </h1>
-    @else
-        <h1 style="font-size:21px;font-weight:800;color:#ffffff;margin:0 0 4px;letter-spacing:-0.5px;line-height:1.2;font-family:'Inter',Helvetica,Arial,sans-serif;">
-            @if ($level === 'error')
-                @lang('Whoops!')
-            @else
-                @lang('Hello!')
-            @endif
-        </h1>
-    @endif
+        </td>
+    </tr>
+</table>
+@endif
+@endif
 
-    {{-- Hello line with user name --}}
-    @if (! empty($userName))
-        <p style="font-size:15px;color:#94a3b8;margin:0 0 12px;font-weight:400;font-family:'Inter',Helvetica,Arial,sans-serif;">
-            @lang('Hello,') <span style="color:#3b82f6;font-weight:600;">{{ $userName }}</span>
-        </p>
-    @endif
+{{-- Main body text (intro lines) --}}
+@foreach ($introLines as $line)
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 10px;">
+    <tr>
+        <td style="font-size:15px;line-height:26px;color:#a1a1aa;font-family:'Inter',Helvetica,Arial,sans-serif;">
+            {!! $line !!}
+        </td>
+    </tr>
+</table>
+@endforeach
 
-    {{-- Intro Lines --}}
-    @if (count($introLines) > 0)
-        <div style="font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:20px;font-family:'Inter',Helvetica,Arial,sans-serif;">
-            @foreach ($introLines as $line)
-                <p style="margin:0 0 12px;font-size:14px;color:#94a3b8;line-height:1.6;font-family:'Inter',Helvetica,Arial,sans-serif;">{!! $line !!}</p>
-            @endforeach
-        </div>
-    @endif
+{{-- Horizontal divider --}}
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:20px 0 16px;">
+    <tr>
+        <td style="border-bottom:1px solid #1f1f23;line-height:1px;font-size:1px;height:1px;">&nbsp;</td>
+    </tr>
+</table>
 
-    {{-- Divider --}}
-    @isset($actionText)
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 20px;">
-            <tr>
-                <td style="height:1px;background:linear-gradient(90deg,transparent,rgba(148,163,184,0.25),transparent);font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
-        </table>
+{{-- CTA Button --}}
+@isset($actionText)
+<?php
+    $color = $level === 'error' ? '#dc2626' : ($level === 'success' ? '#10b981' : '#2563eb');
+?>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 16px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td align="center" height="48" style="height:48px;border-radius:8px;background:{{ $color }};">
+                        <!--[if mso]>
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ $actionUrl }}" style="height:48px;v-text-anchor:middle;width:auto;" arcsize="17%" strokecolor="{{ $color }}" fillcolor="{{ $color }}">
+                            <w:anchorlock/>
+                            <center>
+                        <![endif]-->
+                        <a href="{{ $actionUrl }}" target="_blank" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:700;font-family:'Inter',Helvetica,Arial,sans-serif;color:#ffffff;text-decoration:none;border-radius:8px;letter-spacing:0.3px;line-height:24px;">
+                            {{ $actionText }}
+                        </a>
+                        <!--[if mso]>
+                            </center>
+                        </v:roundrect>
+                        <![endif]-->
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+@endisset
 
-        {{-- Action Button --}}
-        <x-mail::button :url="$actionUrl" :color="$level ?? 'primary'">
-            {{ $actionText }}
-        </x-mail::button>
-    @endisset
+{{-- Expiry text (below CTA) --}}
+@isset($expiryText)
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 8px;">
+    <tr>
+        <td style="font-size:13px;line-height:20px;color:#9ca3af;font-family:'Inter',Helvetica,Arial,sans-serif;text-align:center;">
+            {!! $expiryText !!}
+        </td>
+    </tr>
+</table>
+@endisset
 
-    {{-- Expiry notice --}}
-    @if (! empty($expiryText))
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-            <tr>
-                <td style="text-align:center;padding:0 0 16px;">
-                    <p style="margin:0;font-size:12px;color:#64748b;font-style:italic;font-weight:300;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                        {!! $expiryText !!}
-                    </p>
-                </td>
-            </tr>
-        </table>
-    @endif
+{{-- Outro lines --}}
+@foreach ($outroLines as $line)
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 10px;">
+    <tr>
+        <td style="font-size:15px;line-height:26px;color:#a1a1aa;font-family:'Inter',Helvetica,Arial,sans-serif;">
+            {!! $line !!}
+        </td>
+    </tr>
+</table>
+@endforeach
 
-    {{-- Outro Lines --}}
-    @if (count($outroLines) > 0)
-        <div style="font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:20px;font-family:'Inter',Helvetica,Arial,sans-serif;">
-            @foreach ($outroLines as $line)
-                <p style="margin:0 0 12px;font-size:14px;color:#94a3b8;line-height:1.6;font-family:'Inter',Helvetica,Arial,sans-serif;">{!! $line !!}</p>
-            @endforeach
-        </div>
-    @endif
+{{-- Security Badges --}}
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:28px 0 0;padding:18px 20px;background:rgba(16,185,129,0.06);border-radius:8px;border:1px solid rgba(16,185,129,0.15);">
+    <tr>
+        <td style="font-size:12px;font-weight:700;color:#10b981;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.05em;text-transform:uppercase;padding-bottom:14px;">
+            &mdash; Security Verified &mdash;
+        </td>
+    </tr>
+    <tr>
+        <td style="padding-bottom:8px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td valign="middle" style="font-size:14px;color:#a1a1aa;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:20px;padding-left:4px;">
+                        &bull; End-to-end encrypted
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding-bottom:8px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td valign="middle" style="font-size:14px;color:#a1a1aa;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:20px;padding-left:4px;">
+                        &bull; Verified sender identity
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td valign="middle" style="font-size:14px;color:#a1a1aa;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:20px;padding-left:4px;">
+                        &bull; Protected by CyberGuard
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 
-    {{-- Security badges --}}
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-        <tr>
-            <td style="text-align:center;padding:4px 0 0;">
-                <span class="badge-inline" style="display:inline-block;font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 8px 4px;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                    <img src="{{ $imgBase }}/shield-check.png" width="11" height="11" alt="" style="vertical-align:middle;margin-right:3px;border:0;outline:none;display:inline-block;" />
-                    @lang('End-to-End Encrypted')
-                </span>
-                <span class="badge-inline" style="display:inline-block;font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 8px 4px;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                    <img src="{{ $imgBase }}/check-icon.png" width="11" height="11" alt="" style="vertical-align:middle;margin-right:3px;border:0;outline:none;display:inline-block;" />
-                    @lang('2-Factor Protected')
-                </span>
-                <span class="badge-inline" style="display:inline-block;font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 8px 4px;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                    <img src="{{ $imgBase }}/verified-icon.png" width="11" height="11" alt="" style="vertical-align:middle;margin-right:3px;border:0;outline:none;display:inline-block;" />
-                    @lang('Verified Secure')
-                </span>
-            </td>
-        </tr>
-    </table>
-
-    {{-- Subcopy / Fallback Link --}}
-    @isset($actionText)
-        <x-slot:subcopy>
-            @lang(
-                "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below into your browser:",
-                ['actionText' => $actionText]
-            )
+{{-- Subcopy --}}
+@isset($actionText)
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:28px 0 0;">
+    <tr>
+        <td style="font-size:13px;line-height:20px;color:#9ca3af;font-family:'Inter',Helvetica,Arial,sans-serif;">
+            If you're having trouble clicking the "{{ $actionText }}" button, copy and paste the URL below into your web browser:
             <br />
-            <span style="font-size:12px;color:#1d4ed8;word-break:break-all;overflow-wrap:break-word;font-family:Consolas,Monaco,'Courier New',monospace;background:rgba(59,130,246,0.08);padding:4px 8px;border-radius:6px;display:inline-block;margin-top:4px;max-width:100%;">
-                {{ $actionUrl }}
-            </span>
-        </x-slot:subcopy>
-    @endisset
-</x-mail::message>
+            <span style="color:#3b82f6;word-break:break-all;">{{ $actionUrl }}</span>
+        </td>
+    </tr>
+</table>
+@endisset
+
+{{-- Salutation --}}
+@if (! empty($salutation))
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:28px 0 0;">
+    <tr>
+        <td style="font-size:15px;line-height:24px;color:#a1a1aa;font-family:'Inter',Helvetica,Arial,sans-serif;">
+            {{ $salutation }}
+        </td>
+    </tr>
+</table>
+@else
+@endif
+
+@endcomponent
