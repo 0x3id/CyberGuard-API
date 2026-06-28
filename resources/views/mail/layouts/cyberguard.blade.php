@@ -1,13 +1,30 @@
-<!DOCTYPE html>
+@php
+    $pageTitle = $pageTitle ?? 'CyberGuard';
+    $emailGreeting = $emailGreeting ?? 'CyberGuard Notification';
+    $userName = $userName ?? 'there';
+    $headerIcon = $headerIcon ?? 'envelope';
+    $actionUrl = $actionUrl ?? null;
+    $actionText = $actionText ?? null;
+    $expiryText = $expiryText ?? null;
+    $fallbackUrl = $fallbackUrl ?? $actionUrl;
+    $showFallback = $showFallback ?? filled($fallbackUrl);
+    $footerNote = $footerNote ?? 'If you did not expect this message, you can safely ignore this email.';
+    $supportEmail = $supportEmail ?? 'support@cyberguard.pro';
+    $frontendUrl = $frontendUrl ?? rtrim(config('app.frontend_url', env('FRONTEND_URL', 'https://cyberguard-pro-eta.vercel.app/')), '/');
+@endphp
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify Your Email – CyberGuard</title>
+    <title>{{ $pageTitle }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { background-color: #0a0e17; }
+        html, body {
+            background-color: #0a0e17;
+            min-height: 100vh;
+        }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background-image: radial-gradient(ellipse 70% 50% at 30% 0%, rgba(59,130,246,0.12) 0%, transparent 60%),
@@ -24,8 +41,9 @@
             scrollbar-width: none;
         }
         body::-webkit-scrollbar { display: none; }
-
-        .floating-shapes { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .floating-shapes {
+            position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
+        }
         .shape {
             position: absolute; border-radius: 50%; background: rgba(59,130,246,0.05);
             animation: float 6s ease-in-out infinite;
@@ -38,7 +56,6 @@
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-22px) rotate(180deg); }
         }
-
         .card-wrapper {
             position: relative; z-index: 1; width: 100%; max-width: 440px;
             animation: slideUp 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
@@ -47,13 +64,11 @@
             from { opacity: 0; transform: translateY(40px) scale(0.97); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         .email-card {
             background: #111827; border: 1px solid rgba(148,163,184,0.15);
             border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.45);
             overflow: hidden; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
-
         .card-header {
             background: linear-gradient(135deg, #1f2937 0%, rgba(59,130,246,0.15) 100%);
             border-bottom: 1px solid rgba(148,163,184,0.15);
@@ -64,7 +79,6 @@
             transform: translateX(-50%); width: 80%; height: 1px;
             background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
         }
-
         .logo-area {
             display: flex; align-items: center; justify-content: center;
             gap: 0.6rem; margin-bottom: 0.25rem; position: relative;
@@ -73,11 +87,20 @@
             width: 38px; height: 38px; display: flex; align-items: center;
             justify-content: center; flex-shrink: 0;
         }
+        .shield-icon svg { width: 38px; height: 38px; }
         .brand-name { display: flex; flex-direction: column; align-items: flex-start; }
-        .brand-name .cyber { color: #1d4ed8; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1; }
-        .brand-name .guard { color: #f8fafc; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1; }
-        .brand-name .tagline { font-size: 0.55rem; font-weight: 600; letter-spacing: 0.18em; color: #64748b; text-transform: uppercase; margin-top: 1px; }
-
+        .brand-name .cyber {
+            color: #1d4ed8; font-size: 1.25rem; font-weight: 800;
+            letter-spacing: -0.5px; line-height: 1;
+        }
+        .brand-name .guard {
+            color: #f8fafc; font-size: 1.25rem; font-weight: 800;
+            letter-spacing: -0.5px; line-height: 1;
+        }
+        .brand-name .tagline {
+            font-size: 0.55rem; font-weight: 600; letter-spacing: 0.18em;
+            color: #64748b; text-transform: uppercase; margin-top: 1px;
+        }
         .verify-icon-wrap { margin-top: 1rem; display: flex; justify-content: center; position: relative; }
         .verify-icon-circle {
             width: 56px; height: 56px; border-radius: 50%;
@@ -94,20 +117,24 @@
             to { transform: rotate(360deg); }
         }
         .verify-icon-circle svg { width: 26px; height: 26px; fill: #3b82f6; }
-
         .card-body { padding: 1.5rem 2rem 1.25rem; }
-        .email-greeting { font-size: 1.3rem; font-weight: 800; color: #f8fafc; margin-bottom: 0.25rem; letter-spacing: -0.5px; line-height: 1.2; }
-        .hello-line { font-size: 0.9375rem; color: #94a3b8; margin-bottom: 0.75rem; font-weight: 400; }
+        .email-greeting {
+            font-size: 1.3rem; font-weight: 800; color: #f8fafc;
+            margin-bottom: 0.25rem; letter-spacing: -0.5px; line-height: 1.2;
+        }
+        .hello-line {
+            font-size: 0.9375rem; color: #94a3b8; margin-bottom: 0.75rem; font-weight: 400;
+        }
         .hello-line span { color: #3b82f6; font-weight: 600; }
-        .message-body { font-size: 0.875rem; color: #94a3b8; line-height: 1.6; margin-bottom: 1.25rem; }
+        .message-body {
+            font-size: 0.875rem; color: #94a3b8; line-height: 1.6; margin-bottom: 1.25rem;
+        }
         .message-body strong { color: #3b82f6; font-weight: 700; }
-
         .divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(148,163,184,0.25), transparent);
             margin: 0 -2rem 1.25rem;
         }
-
         .cta-wrap { text-align: center; margin-bottom: 1rem; }
         .btn-verify {
             display: inline-block;
@@ -124,28 +151,35 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
             transform: translateX(-100%); transition: transform 0.5s ease;
         }
-        .btn-verify:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,255,255,0.15); }
+        .btn-verify:hover {
+            transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,255,255,0.15);
+        }
         .btn-verify:hover::before { transform: translateX(100%); }
         .btn-verify:active { transform: translateY(0); }
-        .btn-icon { display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; }
+        .btn-icon {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
+        }
         .btn-icon svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
-
         .expiry-notice { text-align: center; margin-bottom: 1rem; }
-        .expiry-notice p { font-size: 0.75rem; color: #64748b; font-style: italic; font-weight: 300; }
-        .expiry-notice strong { color: #94a3b8; font-weight: 600; font-style: normal; }
-
+        .expiry-notice p {
+            font-size: 0.75rem; color: #64748b; font-style: italic; font-weight: 300;
+        }
+        .expiry-notice strong {
+            color: #94a3b8; font-weight: 600; font-style: normal;
+        }
         .fallback-section {
             background: #1f2937; border: 1px solid rgba(148,163,184,0.15);
             border-radius: 0.75rem; padding: 0.75rem 1rem; margin-bottom: 1rem;
         }
-        .fallback-section p { font-size: 0.8125rem; color: #94a3b8; margin-bottom: 0.5rem; }
+        .fallback-section p {
+            font-size: 0.8125rem; color: #94a3b8; margin-bottom: 0.5rem;
+        }
         .fallback-link {
             font-size: 0.75rem; color: #1d4ed8; word-break: break-all;
             font-family: Consolas, Monaco, 'Courier New', monospace;
             background: rgba(59,130,246,0.08); padding: 0.25rem 0.5rem;
             border-radius: 0.375rem; display: inline-block;
         }
-
         .security-badges {
             display: flex; align-items: center; justify-content: center;
             gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;
@@ -156,15 +190,17 @@
             text-transform: uppercase; letter-spacing: 0.05em;
         }
         .badge svg { width: 12px; height: 12px; fill: #10b981; }
-
         .card-footer {
             background: #1f2937; border-top: 1px solid rgba(148,163,184,0.15);
             padding: 1rem 2rem; text-align: center;
         }
-        .footer-text { font-size: 0.75rem; color: #64748b; line-height: 1.5; }
-        .footer-text a { color: #3b82f6; text-decoration: none; font-weight: 500; }
+        .footer-text {
+            font-size: 0.75rem; color: #64748b; line-height: 1.5;
+        }
+        .footer-text a {
+            color: #3b82f6; text-decoration: none; font-weight: 500;
+        }
         .footer-text a:hover { text-decoration: underline; }
-
         .back-link { text-align: center; margin-top: 1.2rem; }
         .back-link a {
             color: #94a3b8; font-size: 0.875rem; text-decoration: none;
@@ -179,7 +215,6 @@
         }
         .back-link svg { width: 14px; height: 14px; fill: currentColor; }
         .back-link a:hover svg { transform: translateX(-3px); }
-
         @media (max-width: 520px) {
             .card-body { padding: 1.75rem 1.5rem 1.5rem; }
             .card-header { padding: 1.75rem 1.5rem 2rem; }
@@ -201,72 +236,44 @@
     <div class="card-wrapper">
         <div class="email-card">
             <div class="card-header">
-                <div class="logo-area">
-                    <div class="shield-icon">
-                        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none" width="38" height="38">
-                            <defs>
-                                <linearGradient id="cyber-grad-email" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#1d4ed8" />
-                                    <stop offset="50%" stop-color="#3b82f6" />
-                                    <stop offset="100%" stop-color="#60a5fa" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M15 3.5 L6.5 6.5 V14.5 C6.5 20 10 24.5 15 26.5" stroke="url(#cyber-grad-email)" stroke-width="2.2" stroke-linecap="round" />
-                            <path d="M17 3.5 L25.5 6.5 V14.5 C25.5 20 22 24.5 17 26.5" stroke="url(#cyber-grad-email)" stroke-width="2.2" stroke-linecap="round" />
-                            <path d="M13 2.5 H19" stroke="url(#cyber-grad-email)" stroke-width="1.8" stroke-linecap="round" opacity="0.8" />
-                            <path d="M13 28.5 H19" stroke="url(#cyber-grad-email)" stroke-width="1.8" stroke-linecap="round" opacity="0.8" />
-                            <polygon points="16,8.5 21,11.5 21,17.5 16,20.5 11,17.5 11,11.5" fill="rgba(17, 24, 39, 0.75)" stroke="url(#cyber-grad-email)" stroke-width="1.5" stroke-linejoin="round" />
-                            <path d="M16 11.5 A2 2 0 0 0 14 13.5 C14 14.3 14.5 15.0 15.2 15.3 L14.5 18.5 H17.5 L16.8 15.3 C17.5 15.0 18 14.3 18 13.5 A2 2 0 0 0 16 11.5 Z" fill="url(#cyber-grad-email)" />
-                        </svg>
-                    </div>
-                    <div class="brand-name">
-                        <div style="display: flex; gap: 0;">
-                            <span class="cyber">Cyber</span><span class="guard">Guard</span>
-                        </div>
-                        <span class="tagline">Security Protocol Active</span>
-                    </div>
-                </div>
-
-                <div class="verify-icon-wrap">
-                    <div class="verify-icon-circle">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-                        </svg>
-                    </div>
-                </div>
+                @include('mail.partials.brand-header', ['headerIcon' => $headerIcon])
             </div>
 
             <div class="card-body">
-                <h1 class="email-greeting">Confirm Your Identity</h1>
-                <p class="hello-line">Hello, <span>{{user_name}}</span></p>
+                <h1 class="email-greeting">{{ $emailGreeting }}</h1>
+                <p class="hello-line">Hello, <span>{{ $userName }}</span></p>
 
-                <p class="message-body">
-                    A request has been made to associate this email address with a
-                    <strong>CyberGuard</strong> security profile. To ensure the integrity
-                    of our network, please verify your access by clicking the button below.
-                </p>
+                <div class="message-body">
+                    @yield('message')
+                </div>
 
                 <div class="divider"></div>
 
-                <div class="cta-wrap">
-                    <a href="{{verification_link}}" class="btn-verify">
-                        <span class="btn-icon">
-                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                            </svg>
-                            Verify Your Email
-                        </span>
-                    </a>
-                </div>
+                @if ($actionUrl && $actionText)
+                    <div class="cta-wrap">
+                        <a href="{{ $actionUrl }}" class="btn-verify">
+                            <span class="btn-icon">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                </svg>
+                                {{ $actionText }}
+                            </span>
+                        </a>
+                    </div>
+                @endif
 
-                <div class="expiry-notice">
-                    <p>This secure link will expire in <strong>{{expiry_minutes}} minutes</strong>.</p>
-                </div>
+                @if ($expiryText)
+                    <div class="expiry-notice">
+                        <p>{!! $expiryText !!}</p>
+                    </div>
+                @endif
 
-                <div class="fallback-section">
-                    <p>Button not working? Copy and paste the link below into your browser:</p>
-                    <span class="fallback-link">{{verification_link}}</span>
-                </div>
+                @if ($showFallback && $fallbackUrl)
+                    <div class="fallback-section">
+                        <p>Button not working? Copy and paste the link below into your browser:</p>
+                        <span class="fallback-link">{{ $fallbackUrl }}</span>
+                    </div>
+                @endif
 
                 <div class="security-badges">
                     <div class="badge">
@@ -286,17 +293,18 @@
 
             <div class="card-footer">
                 <p class="footer-text">
-                    If you didn't create a CyberGuard account, you can safely ignore this email.
+                    {{ $footerNote }}
                     <br />
-                    Need help? <a href="mailto:support@cyberguard.pro">support@cyberguard.pro</a>
+                    Need help?
+                    <a href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a>
                     &nbsp;·&nbsp;
-                    <a href="#">Privacy Policy</a>
+                    <a href="{{ $frontendUrl }}">Back to CyberGuard</a>
                 </p>
             </div>
         </div>
 
         <div class="back-link">
-            <a href="/">
+            <a href="{{ $frontendUrl }}">
                 <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                 Back to CyberGuard
             </a>

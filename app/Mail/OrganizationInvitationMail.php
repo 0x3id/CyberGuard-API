@@ -4,11 +4,11 @@ namespace App\Mail;
 
 use App\Models\OrganizationInvitation;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class OrganizationInvitationMail extends Mailable
 {
@@ -16,17 +16,11 @@ class OrganizationInvitationMail extends Mailable
 
     public OrganizationInvitation $invitation;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(OrganizationInvitation $invitation)
     {
         $this->invitation = $invitation;
     }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -34,19 +28,21 @@ class OrganizationInvitationMail extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
+        $frontendUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL', 'https://cyberguard-pro-eta.vercel.app/')), '/');
+        $inviteUrl = $frontendUrl . '/organizations/join?token=' . $this->invitation->token;
+        $userName = Str::before($this->invitation->email, '@');
+
         return new Content(
-            view: 'emails.organization-invitation',
+            view: 'mail.organization-invitation',
             with: [
+                'userName' => $userName !== '' ? $userName : 'there',
                 'organizationName' => $this->invitation->organization->name,
                 'role' => $this->invitation->role,
-                // The frontend URL that will handle the token
-                'inviteUrl' => config('app.frontend_url') . 'organizations/join?token=' . $this->invitation->token,
-            ]
+                'inviteUrl' => $inviteUrl,
+                'expiryHours' => 24,
+            ],
         );
     }
 }

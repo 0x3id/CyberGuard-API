@@ -6,23 +6,17 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 
-class ResetPasswordNotification extends Notification
+class ResetPasswordNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public $token;
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct($token)
-    {
-        $this->token = $token;
-    }
+    public function __construct(
+        public string $token,
+    ) {}
 
     /**
-     * Get the notification's delivery channels.
-     *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
@@ -30,32 +24,31 @@ class ResetPasswordNotification extends Notification
         return ['mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
-        $frontendUrl = env("FRONTEND_URL") ?: 'http://127.0.0.1:5500/reset-password';
-        $url = $frontendUrl . "reset-password" .'?token=' . $this->token . '&email=' . urlencode($notifiable->email);
+        $frontendUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL', 'https://cyberguard-pro-eta.vercel.app/')), '/');
+        $resetUrl = $frontendUrl . '/reset-password?token=' . $this->token . '&email=' . urlencode($notifiable->email);
+
+        $userName = $notifiable->full_name
+            ?? (Str::before((string) $notifiable->email, '@') ?: 'there');
 
         return (new MailMessage)
-            ->subject('Reset Password Notification')
-            ->greeting("Hello!")
-            ->line('You are receiving this email because we received a password reset request for your account.')
-            ->action('Reset Password', url($url))
-            ->line('This password reset link will expire in 60 minutes.')
-            ->line('If you did not request a password reset, no further action is required.');
+            ->subject('Reset Password – CyberGuard')
+            ->greeting('Reset Your Password')
+            ->with([
+                'userName' => $userName,
+                'expiryText' => 'This password reset link will expire in <strong style="color:#94a3b8;font-weight:600;font-style:normal;">60 minutes</strong>.',
+            ])
+            ->line('We received a password reset request for your <strong style="color:#3b82f6;font-weight:700;">CyberGuard</strong> account.')
+            ->line('Click the button below to choose a new password and restore access to your security profile.')
+            ->action('Reset Password', $resetUrl);
     }
 
     /**
-     * Get the array representation of the notification.
-     *
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 }

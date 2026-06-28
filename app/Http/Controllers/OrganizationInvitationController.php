@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Models\UserSubscription;
+use App\Support\SubscriptionPlans;
+
 
 class OrganizationInvitationController extends Controller
 {
@@ -114,6 +117,20 @@ class OrganizationInvitationController extends Controller
                 'job_tittle' => $validated['job_tittle'],
                 'password' => Hash::make($validated['password']),
                 'email_verified_at' => now(), // Auto-verify since they verified the invite link
+            ]);
+
+            $freePlan = SubscriptionPlans::user('free');
+
+            UserSubscription::query()->create([
+                'user_id' => $user->id,
+                'plan' => 'free',
+                'status' => 'active',
+                'max_projects' => $freePlan['max_projects'],
+                'max_collaborate_in_projects' => $freePlan['max_collaborate_in_projects'],
+                'max_targets' => $freePlan['max_targets_per_project'],
+                'max_targets_per_project' => $freePlan['max_targets_per_project'],
+                'max_scans_per_month' => $freePlan['max_scans_per_month'],
+                'started_at' => now(),
             ]);
 
             $organization = $invitation->organization;

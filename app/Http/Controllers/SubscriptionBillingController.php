@@ -145,7 +145,7 @@ class SubscriptionBillingController extends Controller
 
     public function orders(Request $request): JsonResponse
     {
-        $orders = SubscriptionBillingOrder::query()
+        $userOrders = SubscriptionBillingOrder::query()
             ->where('user_id', $request->user()->id)
             ->where('workspace_type', 'user')
             ->latest()
@@ -164,9 +164,31 @@ class SubscriptionBillingController extends Controller
                 'created_at',
             ]);
 
+            $orgOrders = SubscriptionBillingOrder::query()
+            ->where('user_id', $request->user()->id)
+            ->where('workspace_type', 'organization')
+            ->latest()
+            ->limit(50)
+            ->get([
+                'id',
+                'plan',
+                'amount_cents',
+                'currency',
+                'status',
+                'merchant_reference',
+                'paymob_order_id',
+                'paymob_transaction_id',
+                'paid_at',
+                'failure_reason',
+                'created_at',
+            ]);
+
         return response()->json([
             'status' => 'success',
-            'data' => $orders,
+            'data' => [
+                'user_orders' => $userOrders,
+                'organization_orders' => $orgOrders,
+            ]
         ]);
     }
 }
