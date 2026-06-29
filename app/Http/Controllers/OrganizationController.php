@@ -336,6 +336,67 @@ class OrganizationController extends Controller
     }
 
     /**
+     * DELETE /api/organizations/{id}/pending
+     * Delete pending organization
+     */
+    public function deletePending(Request $request, string $id): JsonResponse
+    {
+        $user = $request->user();
+
+        $organization = Organization::query()->find($id);
+
+        if (! $organization) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Organization not found.',
+            ], 404);
+        }
+
+        if ($organization->owner_id !== $user->id) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Only the owner can delete this organization.',
+            ], 403);
+        }
+
+        if ($organization->isSubscriptionActive()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Active organizations cannot be deleted through this endpoint.',
+            ], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($organization): void {
+                OrganizationInvitation::query()
+                    ->where('organization_id', $organization->id)
+                    ->delete();
+
+                $organization->projects()->forceDelete();
+                $organization->subscription()?->delete();
+
+                SubscriptionBillingOrder::query()
+                    ->where('billable_type', Organization::class)
+                    ->where('billable_id', $organization->id)
+                    ->delete();
+
+                $organization->members()->detach();
+                $organization->forceDelete();
+            });
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Pending organization deleted successfully.',
+            ]);
+        } catch (Throwable) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to delete pending organization.',
+            ], 500);
+        }
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function formatWorkspace(Organization $organization, ?string $step = null): array

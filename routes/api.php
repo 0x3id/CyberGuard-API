@@ -173,6 +173,7 @@ Route::middleware('auth:sanctum')->group(function() {
         Route::post('/organizations/{id}/resend-verification', 'resendVerification');
         Route::post('/organizations/{id}/restore', 'restore');
         Route::delete('/organizations/{id}/force', 'forceDestroy');
+        Route::delete('/organizations/{id}/pending', 'deletePending');
     });
 
     // Corporate Member Provisioning Endpoint for Registered Platform Users
