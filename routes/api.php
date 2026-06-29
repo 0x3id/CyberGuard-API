@@ -12,6 +12,7 @@ use App\Http\Controllers\PasswordResetController;
 
 // ── Personal & Core Platform Controllers ────────────────────────────────────
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TargetController;
 use App\Http\Controllers\ScanController;
@@ -137,6 +138,12 @@ Route::middleware('auth:sanctum')->group(function() {
 
     // Individual Account Metrics & Global Security Overview
     Route::get('/dashboard/metrics', [DashboardController::class, 'getMetrics']);
+
+    // User Profile Management — text fields (full_name, job_title)
+    Route::match(['put', 'patch'], '/user/profile', [ProfileController::class, 'update']);
+
+    // User Profile Management — avatar upload
+    Route::post('/user/profile/avatar', [ProfileController::class, 'updateAvatar']);
 
     // Standard B2C Subscription & Payment Orders Management
     Route::controller(UserSubscriptionController::class)->group(function() {

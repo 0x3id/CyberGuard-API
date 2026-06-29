@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use App\Notifications\ResetPasswordNotification;
 
@@ -70,6 +71,25 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getJobTitleAttribute(): ?string
+    {
+        return $this->job_tittle;
+    }
+
+    public function setJobTitleAttribute(string| null $value): void
+    {
+        $this->attributes['job_tittle'] = $value;
+    }
+
+    public function getAvatarUrlAttribute(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($value);
     }
 
     public function sendPasswordResetNotification($token)
